@@ -1,8 +1,9 @@
-use std::collections::binary_heap::{Drain, PeekMut};
-use std::collections::BinaryHeap;
+#![cfg_attr(feature = "trusted_len", feature(trusted_len))]
+#![cfg_attr(feature = "exact_size_is_empty", feature(exact_size_is_empty))]
+
+use dary_heap::{BinaryHeap, Drain, PeekMut};
+#[cfg(feature = "trusted_len")]
 use std::iter::TrustedLen;
-use std::panic::{catch_unwind, AssertUnwindSafe};
-use std::sync::atomic::{AtomicU32, Ordering};
 
 #[test]
 fn test_iterator() {
@@ -64,6 +65,7 @@ fn test_into_iter_rev_collect() {
 }
 
 #[test]
+#[cfg(feature = "into_iter_sorted")]
 fn test_into_iter_sorted_collect() {
     let heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     let it = heap.into_iter_sorted();
@@ -72,6 +74,7 @@ fn test_into_iter_sorted_collect() {
 }
 
 #[test]
+#[cfg(feature = "drain_sorted")]
 fn test_drain_sorted_collect() {
     let mut heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     let it = heap.drain_sorted();
@@ -90,6 +93,7 @@ fn check_exact_size_iterator<I: ExactSizeIterator>(len: usize, it: I) {
         it.next();
     }
     assert_eq!(it.len(), 0);
+    #[cfg(feature = "exact_size_is_empty")]
     assert!(it.is_empty());
 }
 
@@ -98,11 +102,14 @@ fn test_exact_size_iterator() {
     let heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     check_exact_size_iterator(heap.len(), heap.iter());
     check_exact_size_iterator(heap.len(), heap.clone().into_iter());
+    #[cfg(feature = "into_iter_sorted")]
     check_exact_size_iterator(heap.len(), heap.clone().into_iter_sorted());
     check_exact_size_iterator(heap.len(), heap.clone().drain());
+    #[cfg(feature = "drain_sorted")]
     check_exact_size_iterator(heap.len(), heap.clone().drain_sorted());
 }
 
+#[cfg(feature = "trusted_len")]
 fn check_trusted_len<I: TrustedLen>(len: usize, it: I) {
     let mut it = it;
     for i in 0..len {
@@ -116,9 +123,13 @@ fn check_trusted_len<I: TrustedLen>(len: usize, it: I) {
 }
 
 #[test]
+#[cfg(feature = "trusted_len")]
 fn test_trusted_len() {
     let heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
+    check_trusted_len(heap.len(), heap.clone().into_vec().into_iter());
+    #[cfg(feature = "into_iter_sorted")]
     check_trusted_len(heap.len(), heap.clone().into_iter_sorted());
+    #[cfg(feature = "drain_sorted")]
     check_trusted_len(heap.len(), heap.clone().drain_sorted());
 }
 
@@ -183,22 +194,22 @@ fn test_push() {
 
 #[test]
 fn test_push_unique() {
-    let mut heap = BinaryHeap::<Box<_>>::from(vec![box 2, box 4, box 9]);
+    let mut heap = BinaryHeap::<Box<_>>::from(vec![Box::new(2), Box::new(4), Box::new(9)]);
     assert_eq!(heap.len(), 3);
     assert!(**heap.peek().unwrap() == 9);
-    heap.push(box 11);
+    heap.push(Box::new(11));
     assert_eq!(heap.len(), 4);
     assert!(**heap.peek().unwrap() == 11);
-    heap.push(box 5);
+    heap.push(Box::new(5));
     assert_eq!(heap.len(), 5);
     assert!(**heap.peek().unwrap() == 11);
-    heap.push(box 27);
+    heap.push(Box::new(27));
     assert_eq!(heap.len(), 6);
     assert!(**heap.peek().unwrap() == 27);
-    heap.push(box 3);
+    heap.push(Box::new(3));
     assert_eq!(heap.len(), 7);
     assert!(**heap.peek().unwrap() == 27);
-    heap.push(box 103);
+    heap.push(Box::new(103));
     assert_eq!(heap.len(), 8);
     assert!(**heap.peek().unwrap() == 103);
 }
@@ -269,16 +280,24 @@ fn test_drain() {
 }
 
 #[test]
+#[cfg(feature = "drain_sorted")]
 fn test_drain_sorted() {
     let mut q: BinaryHeap<_> = [9, 8, 7, 6, 5, 4, 3, 2, 1].iter().cloned().collect();
 
-    assert_eq!(q.drain_sorted().take(5).collect::<Vec<_>>(), vec![9, 8, 7, 6, 5]);
+    assert_eq!(
+        q.drain_sorted().take(5).collect::<Vec<_>>(),
+        vec![9, 8, 7, 6, 5]
+    );
 
     assert!(q.is_empty());
 }
 
 #[test]
+#[cfg(feature = "drain_sorted")]
 fn test_drain_sorted_leak() {
+    use std::panic::{catch_unwind, AssertUnwindSafe};
+    use std::sync::atomic::{AtomicU32, Ordering};
+
     static DROPS: AtomicU32 = AtomicU32::new(0);
 
     #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -373,6 +392,7 @@ fn assert_covariance() {
 }
 
 #[test]
+#[cfg(feature = "retain")]
 fn test_retain() {
     let mut a = BinaryHeap::from(vec![-10, -5, 1, 2, 4, 13]);
     a.retain(|x| x % 2 == 0);
@@ -428,8 +448,11 @@ fn panic_safe() {
         for i in 1..=DATASZ {
             DROP_COUNTER.store(0, Ordering::SeqCst);
 
-            let mut panic_ords: Vec<_> =
-                data.iter().filter(|&&x| x != i).map(|&x| PanicOrd(x, false)).collect();
+            let mut panic_ords: Vec<_> = data
+                .iter()
+                .filter(|&&x| x != i)
+                .map(|&x| PanicOrd(x, false))
+                .collect();
             let panic_item = PanicOrd(i, true);
 
             // heapify the sane items

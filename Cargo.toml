@@ -9,3 +9,18 @@ repository = "https://github.com/hanmertens/dary_heap"
 readme = "README.md"
 keywords = ["heap", "priority-queue"]
 categories = ["data-structures"]
+
+[features]
+# Features requiring nightly
+exact_size_is_empty = []
+extend_one = []
+shrink_to = []
+specialization_extend = []
+trusted_len = []
+# Features available on stable
+drain_sorted = []
+into_iter_sorted = []
+retain = []
+
+[dev-dependencies]
+rand = "0.7"
