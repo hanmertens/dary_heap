@@ -19,7 +19,7 @@
 //!
 //! ```
 //! use std::cmp::Ordering;
-//! use std::collections::BinaryHeap;
+//! use dary_heap::BinaryHeap;
 //!
 //! #[derive(Copy, Clone, Eq, PartialEq)]
 //! struct State {
@@ -180,7 +180,7 @@ use alloc::{vec, vec::Vec};
 /// # Examples
 ///
 /// ```
-/// use std::collections::BinaryHeap;
+/// use dary_heap::BinaryHeap;
 ///
 /// // Type inference lets us omit an explicit type signature (which
 /// // would be `BinaryHeap<i32>` in this example).
@@ -227,7 +227,7 @@ use alloc::{vec, vec::Vec};
 /// value instead of the greatest one.
 ///
 /// ```
-/// use std::collections::BinaryHeap;
+/// use dary_heap::BinaryHeap;
 /// use std::cmp::Reverse;
 ///
 /// let mut heap = BinaryHeap::new();
@@ -348,7 +348,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     /// heap.push(4);
     /// ```
@@ -366,7 +366,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::with_capacity(10);
     /// heap.push(4);
     /// ```
@@ -387,7 +387,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     /// assert!(heap.peek_mut().is_none());
     ///
@@ -423,7 +423,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::from(vec![1, 3]);
     ///
     /// assert_eq!(heap.pop(), Some(3));
@@ -451,7 +451,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     /// heap.push(3);
     /// heap.push(5);
@@ -490,7 +490,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     ///
     /// let mut heap = BinaryHeap::from(vec![1, 2, 4, 5, 7]);
     /// heap.push(6);
@@ -600,7 +600,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     ///
     /// let v = vec![-10, 1, 2, 3, 3];
     /// let mut a = BinaryHeap::from(v);
@@ -658,8 +658,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// #![feature(binary_heap_drain_sorted)]
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     ///
     /// let mut heap = BinaryHeap::from(vec![1, 2, 3, 4, 5]);
     /// assert_eq!(heap.len(), 5);
@@ -683,8 +682,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// #![feature(binary_heap_retain)]
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     ///
     /// let mut heap = BinaryHeap::from(vec![-10, -5, 1, 2, 4, 13]);
     ///
@@ -711,7 +709,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let heap = BinaryHeap::from(vec![1, 2, 3, 4]);
     ///
     /// // Print 1, 2, 3, 4 in arbitrary order
@@ -733,8 +731,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// #![feature(binary_heap_into_iter_sorted)]
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let heap = BinaryHeap::from(vec![1, 2, 3, 4, 5]);
     ///
     /// assert_eq!(heap.into_iter_sorted().take(2).collect::<Vec<_>>(), vec![5, 4]);
@@ -751,7 +748,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     /// assert_eq!(heap.peek(), None);
     ///
@@ -776,7 +773,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::with_capacity(100);
     /// assert!(heap.capacity() >= 100);
     /// heap.push(4);
@@ -801,7 +798,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     /// heap.reserve_exact(100);
     /// assert!(heap.capacity() >= 100);
@@ -825,7 +822,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     /// heap.reserve(100);
     /// assert!(heap.capacity() >= 100);
@@ -842,7 +839,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap: BinaryHeap<i32> = BinaryHeap::with_capacity(100);
     ///
     /// assert!(heap.capacity() >= 100);
@@ -865,7 +862,7 @@ impl<T> BinaryHeap<T> {
     ///
     /// ```
     /// #![feature(shrink_to)]
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap: BinaryHeap<i32> = BinaryHeap::with_capacity(100);
     ///
     /// assert!(heap.capacity() >= 100);
@@ -886,7 +883,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let heap = BinaryHeap::from(vec![1, 2, 3, 4, 5, 6, 7]);
     /// let vec = heap.into_vec();
     ///
@@ -906,7 +903,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let heap = BinaryHeap::from(vec![1, 3]);
     ///
     /// assert_eq!(heap.len(), 2);
@@ -922,7 +919,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::new();
     ///
     /// assert!(heap.is_empty());
@@ -946,7 +943,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::from(vec![1, 3]);
     ///
     /// assert!(!heap.is_empty());
@@ -971,7 +968,7 @@ impl<T> BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let mut heap = BinaryHeap::from(vec![1, 3]);
     ///
     /// assert!(!heap.is_empty());
@@ -1335,7 +1332,7 @@ impl<T> IntoIterator for BinaryHeap<T> {
     /// Basic usage:
     ///
     /// ```
-    /// use std::collections::BinaryHeap;
+    /// use dary_heap::BinaryHeap;
     /// let heap = BinaryHeap::from(vec![1, 2, 3, 4]);
     ///
     /// // Print 1, 2, 3, 4 in arbitrary order
