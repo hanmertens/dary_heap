@@ -1,8 +1,8 @@
-//! A priority queue implemented with a binary heap.
+//! A priority queue implemented with a *d*-ary heap.
 //!
 //! Insertion and popping the largest element have `O(log(n))` time complexity.
-//! Checking the largest element is `O(1)`. Converting a vector to a binary heap
-//! can be done in-place, and has `O(n)` complexity. A binary heap can also be
+//! Checking the largest element is `O(1)`. Converting a vector to a *d*-ary heap
+//! can be done in-place, and has `O(n)` complexity. A *d*-ary heap can also be
 //! converted to a sorted vector in-place, allowing it to be used for an `O(n * log(n))`
 //! in-place heapsort.
 //!
@@ -10,16 +10,16 @@
 //!
 //! This is a larger example that implements [Dijkstra's algorithm][dijkstra]
 //! to solve the [shortest path problem][sssp] on a [directed graph][dir_graph].
-//! It shows how to use [`BinaryHeap`] with custom types.
+//! It shows how to use [`DaryHeap`] with custom types.
 //!
 //! [dijkstra]: http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 //! [sssp]: http://en.wikipedia.org/wiki/Shortest_path_problem
 //! [dir_graph]: http://en.wikipedia.org/wiki/Directed_graph
-//! [`BinaryHeap`]: struct.BinaryHeap.html
+//! [`DaryHeap`]: struct.DaryHeap.html
 //!
 //! ```
 //! use std::cmp::Ordering;
-//! use dary_heap::BinaryHeap;
+//! use dary_heap::TernaryHeap;
 //!
 //! #[derive(Copy, Clone, Eq, PartialEq)]
 //! struct State {
@@ -63,7 +63,7 @@
 //!     // dist[node] = current shortest distance from `start` to `node`
 //!     let mut dist: Vec<_> = (0..adj_list.len()).map(|_| usize::MAX).collect();
 //!
-//!     let mut heap = BinaryHeap::new();
+//!     let mut heap = TernaryHeap::new();
 //!
 //!     // We're at `start`, with a zero cost
 //!     dist[start] = 0;
@@ -224,7 +224,7 @@ pub type QuaternaryHeap<T> = DaryHeap<T, D4>;
 /// An octonary heap (*d* = 8).
 pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 
-/// A priority queue implemented with a binary heap.
+/// A priority queue implemented with a *d*-ary heap.
 ///
 /// This will be a max-heap.
 ///
@@ -279,14 +279,14 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// ## Min-heap
 ///
 /// Either `std::cmp::Reverse` or a custom `Ord` implementation can be used to
-/// make `BinaryHeap` a min-heap. This makes `heap.pop()` return the smallest
+/// make `DaryHeap` a min-heap. This makes `heap.pop()` return the smallest
 /// value instead of the greatest one.
 ///
 /// ```
-/// use dary_heap::BinaryHeap;
+/// use dary_heap::TernaryHeap;
 /// use std::cmp::Reverse;
 ///
-/// let mut heap = BinaryHeap::new();
+/// let mut heap = TernaryHeap::new();
 ///
 /// // Wrap values in `Reverse`
 /// heap.push(Reverse(1));
@@ -319,13 +319,13 @@ pub struct DaryHeap<T, D: Dary> {
 }
 
 /// Structure wrapping a mutable reference to the greatest item on a
-/// `BinaryHeap`.
+/// `DaryHeap`.
 ///
-/// This `struct` is created by the [`peek_mut`] method on [`BinaryHeap`]. See
+/// This `struct` is created by the [`peek_mut`] method on [`DaryHeap`]. See
 /// its documentation for more.
 ///
-/// [`peek_mut`]: struct.BinaryHeap.html#method.peek_mut
-/// [`BinaryHeap`]: struct.BinaryHeap.html
+/// [`peek_mut`]: struct.DaryHeap.html#method.peek_mut
+/// [`DaryHeap`]: struct.DaryHeap.html
 pub struct PeekMut<'a, T: 'a + Ord, D: Dary> {
     heap: &'a mut DaryHeap<T, D>,
     sift: bool,
@@ -385,7 +385,7 @@ impl<T: Clone, D: Dary> Clone for DaryHeap<T, D> {
 }
 
 impl<T: Ord, D: Dary> Default for DaryHeap<T, D> {
-    /// Creates an empty `BinaryHeap<T>`.
+    /// Creates an empty `DaryHeap<T, D>`.
     #[inline]
     fn default() -> DaryHeap<T, D> {
         DaryHeap::new()
@@ -399,15 +399,15 @@ impl<T: fmt::Debug, D: Dary> fmt::Debug for DaryHeap<T, D> {
 }
 
 impl<T: Ord, D: Dary> DaryHeap<T, D> {
-    /// Creates an empty `BinaryHeap` as a max-heap.
+    /// Creates an empty `DaryHeap` as a max-heap.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::new();
+    /// use dary_heap::QuaternaryHeap;
+    /// let mut heap = QuaternaryHeap::new();
     /// heap.push(4);
     /// ```
     pub fn new() -> DaryHeap<T, D> {
@@ -417,9 +417,9 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         }
     }
 
-    /// Creates an empty `BinaryHeap` with a specific capacity.
+    /// Creates an empty `DaryHeap` with a specific capacity.
     /// This preallocates enough memory for `capacity` elements,
-    /// so that the `BinaryHeap` does not have to be reallocated
+    /// so that the `DaryHeap` does not have to be reallocated
     /// until it contains at least that many values.
     ///
     /// # Examples
@@ -427,8 +427,8 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::with_capacity(10);
+    /// use dary_heap::QuaternaryHeap;
+    /// let mut heap = QuaternaryHeap::with_capacity(10);
     /// heap.push(4);
     /// ```
     pub fn with_capacity(capacity: usize) -> DaryHeap<T, D> {
@@ -438,7 +438,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         }
     }
 
-    /// Returns a mutable reference to the greatest item in the binary heap, or
+    /// Returns a mutable reference to the greatest item in the *d*-ary heap, or
     /// `None` if it is empty.
     ///
     /// Note: If the `PeekMut` value is leaked, the heap may be in an
@@ -449,8 +449,8 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::new();
+    /// use dary_heap::TernaryHeap;
+    /// let mut heap = TernaryHeap::new();
     /// assert!(heap.peek_mut().is_none());
     ///
     /// heap.push(1);
@@ -477,7 +477,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         }
     }
 
-    /// Removes the greatest item from the binary heap and returns it, or `None` if it
+    /// Removes the greatest item from the *d*-nary heap and returns it, or `None` if it
     /// is empty.
     ///
     /// # Examples
@@ -506,15 +506,15 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         })
     }
 
-    /// Pushes an item onto the binary heap.
+    /// Pushes an item onto the *d*-nary heap.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::new();
+    /// use dary_heap::QuaternaryHeap;
+    /// let mut heap = QuaternaryHeap::new();
     /// heap.push(3);
     /// heap.push(5);
     /// heap.push(1);
@@ -544,7 +544,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         self.sift_up(0, old_len);
     }
 
-    /// Consumes the `BinaryHeap` and returns a vector in sorted
+    /// Consumes the `DaryHeap` and returns a vector in sorted
     /// (ascending) order.
     ///
     /// # Examples
@@ -552,9 +552,9 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
+    /// use dary_heap::OctonaryHeap;
     ///
-    /// let mut heap = BinaryHeap::from(vec![1, 2, 4, 5, 7]);
+    /// let mut heap = OctonaryHeap::from(vec![1, 2, 4, 5, 7]);
     /// heap.push(6);
     /// heap.push(3);
     ///
@@ -667,13 +667,13 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
+    /// use dary_heap::OctonaryHeap;
     ///
     /// let v = vec![-10, 1, 2, 3, 3];
-    /// let mut a = BinaryHeap::from(v);
+    /// let mut a = OctonaryHeap::from(v);
     ///
     /// let v = vec![-20, 5, 43];
-    /// let mut b = BinaryHeap::from(v);
+    /// let mut b = OctonaryHeap::from(v);
     ///
     /// a.append(&mut b);
     ///
@@ -726,9 +726,9 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
+    /// use dary_heap::TernaryHeap;
     ///
-    /// let mut heap = BinaryHeap::from(vec![1, 2, 3, 4, 5]);
+    /// let mut heap = TernaryHeap::from(vec![1, 2, 3, 4, 5]);
     /// assert_eq!(heap.len(), 5);
     ///
     /// drop(heap.drain_sorted()); // removes all elements in heap order
@@ -750,9 +750,9 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
+    /// use dary_heap::OctonaryHeap;
     ///
-    /// let mut heap = BinaryHeap::from(vec![-10, -5, 1, 2, 4, 13]);
+    /// let mut heap = OctonaryHeap::from(vec![-10, -5, 1, 2, 4, 13]);
     ///
     /// heap.retain(|x| x % 2 == 0); // only keep even numbers
     ///
@@ -777,8 +777,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let heap = BinaryHeap::from(vec![1, 2, 3, 4]);
+    /// use dary_heap::TernaryHeap;
+    /// let heap = TernaryHeap::from(vec![1, 2, 3, 4]);
     ///
     /// // Print 1, 2, 3, 4 in arbitrary order
     /// for x in heap.iter() {
@@ -799,8 +799,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let heap = BinaryHeap::from(vec![1, 2, 3, 4, 5]);
+    /// use dary_heap::QuaternaryHeap;
+    /// let heap = QuaternaryHeap::from(vec![1, 2, 3, 4, 5]);
     ///
     /// assert_eq!(heap.into_iter_sorted().take(2).collect::<Vec<_>>(), vec![5, 4]);
     /// ```
@@ -809,7 +809,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
         IntoIterSorted { inner: self }
     }
 
-    /// Returns the greatest item in the binary heap, or `None` if it is empty.
+    /// Returns the greatest item in the *d*-ary heap, or `None` if it is empty.
     ///
     /// # Examples
     ///
@@ -834,15 +834,15 @@ impl<T, D: Dary> DaryHeap<T, D> {
         self.data.get(0)
     }
 
-    /// Returns the number of elements the binary heap can hold without reallocating.
+    /// Returns the number of elements the *d*-ary heap can hold without reallocating.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::with_capacity(100);
+    /// use dary_heap::OctonaryHeap;
+    /// let mut heap = OctonaryHeap::with_capacity(100);
     /// assert!(heap.capacity() >= 100);
     /// heap.push(4);
     /// ```
@@ -851,7 +851,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
     }
 
     /// Reserves the minimum capacity for exactly `additional` more elements to be inserted in the
-    /// given `BinaryHeap`. Does nothing if the capacity is already sufficient.
+    /// given `DaryHeap`. Does nothing if the capacity is already sufficient.
     ///
     /// Note that the allocator may give the collection more space than it requests. Therefore
     /// capacity can not be relied upon to be precisely minimal. Prefer [`reserve`] if future
@@ -866,8 +866,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::new();
+    /// use dary_heap::OctonaryHeap;
+    /// let mut heap = OctonaryHeap::new();
     /// heap.reserve_exact(100);
     /// assert!(heap.capacity() >= 100);
     /// heap.push(4);
@@ -879,7 +879,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
     }
 
     /// Reserves capacity for at least `additional` more elements to be inserted in the
-    /// `BinaryHeap`. The collection may reserve more space to avoid frequent reallocations.
+    /// `DaryHeap`. The collection may reserve more space to avoid frequent reallocations.
     ///
     /// # Panics
     ///
@@ -907,8 +907,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap: BinaryHeap<i32> = BinaryHeap::with_capacity(100);
+    /// use dary_heap::TernaryHeap;
+    /// let mut heap: TernaryHeap<i32> = TernaryHeap::with_capacity(100);
     ///
     /// assert!(heap.capacity() >= 100);
     /// heap.shrink_to_fit();
@@ -930,8 +930,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     ///
     /// ```
     /// #![feature(shrink_to)]
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap: BinaryHeap<i32> = BinaryHeap::with_capacity(100);
+    /// use dary_heap::TernaryHeap;
+    /// let mut heap: TernaryHeap<i32> = TernaryHeap::with_capacity(100);
     ///
     /// assert!(heap.capacity() >= 100);
     /// heap.shrink_to(10);
@@ -943,7 +943,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
         self.data.shrink_to(min_capacity)
     }
 
-    /// Consumes the `BinaryHeap` and returns the underlying vector
+    /// Consumes the `DaryHeap` and returns the underlying vector
     /// in arbitrary order.
     ///
     /// # Examples
@@ -951,8 +951,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let heap = BinaryHeap::from(vec![1, 2, 3, 4, 5, 6, 7]);
+    /// use dary_heap::QuaternaryHeap;
+    /// let heap = QuaternaryHeap::from(vec![1, 2, 3, 4, 5, 6, 7]);
     /// let vec = heap.into_vec();
     ///
     /// // Will print in some order
@@ -964,7 +964,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
         self.into()
     }
 
-    /// Returns the length of the binary heap.
+    /// Returns the length of the *d*-ary heap.
     ///
     /// # Examples
     ///
@@ -980,7 +980,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
         self.data.len()
     }
 
-    /// Checks if the binary heap is empty.
+    /// Checks if the *d*-ary heap is empty.
     ///
     /// # Examples
     ///
@@ -1002,7 +1002,7 @@ impl<T, D: Dary> DaryHeap<T, D> {
         self.len() == 0
     }
 
-    /// Clears the binary heap, returning an iterator over the removed elements.
+    /// Clears the *d*-ary heap, returning an iterator over the removed elements.
     ///
     /// The elements are removed in arbitrary order.
     ///
@@ -1011,8 +1011,8 @@ impl<T, D: Dary> DaryHeap<T, D> {
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::from(vec![1, 3]);
+    /// use dary_heap::QuaternaryHeap;
+    /// let mut heap = QuaternaryHeap::from(vec![1, 3]);
     ///
     /// assert!(!heap.is_empty());
     ///
@@ -1029,15 +1029,15 @@ impl<T, D: Dary> DaryHeap<T, D> {
         }
     }
 
-    /// Drops all items from the binary heap.
+    /// Drops all items from the *d*-ary heap.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
-    /// use dary_heap::BinaryHeap;
-    /// let mut heap = BinaryHeap::from(vec![1, 3]);
+    /// use dary_heap::TernaryHeap;
+    /// let mut heap = TernaryHeap::from(vec![1, 3]);
     ///
     /// assert!(!heap.is_empty());
     ///
@@ -1122,13 +1122,13 @@ impl<T> Drop for Hole<'_, T> {
     }
 }
 
-/// An iterator over the elements of a `BinaryHeap`.
+/// An iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`iter`] method on [`BinaryHeap`]. See its
+/// This `struct` is created by the [`iter`] method on [`DaryHeap`]. See its
 /// documentation for more.
 ///
-/// [`iter`]: struct.BinaryHeap.html#method.iter
-/// [`BinaryHeap`]: struct.BinaryHeap.html
+/// [`iter`]: struct.DaryHeap.html#method.iter
+/// [`DaryHeap`]: struct.DaryHeap.html
 pub struct Iter<'a, T: 'a> {
     iter: slice::Iter<'a, T>,
 }
@@ -1183,13 +1183,13 @@ impl<T> ExactSizeIterator for Iter<'_, T> {
 
 impl<T> FusedIterator for Iter<'_, T> {}
 
-/// An owning iterator over the elements of a `BinaryHeap`.
+/// An owning iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`into_iter`] method on [`BinaryHeap`]
+/// This `struct` is created by the [`into_iter`] method on [`DaryHeap`]
 /// (provided by the `IntoIterator` trait). See its documentation for more.
 ///
-/// [`into_iter`]: struct.BinaryHeap.html#method.into_iter
-/// [`BinaryHeap`]: struct.BinaryHeap.html
+/// [`into_iter`]: struct.DaryHeap.html#method.into_iter
+/// [`DaryHeap`]: struct.DaryHeap.html
 #[derive(Clone)]
 pub struct IntoIter<T> {
     iter: vec::IntoIter<T>,
@@ -1264,13 +1264,13 @@ impl<T: Ord, D: Dary> FusedIterator for IntoIterSorted<T, D> {}
 #[cfg(all(feature = "into_iter_sorted", feature = "trusted_len"))]
 unsafe impl<T: Ord, D: Dary> TrustedLen for IntoIterSorted<T, D> {}
 
-/// A draining iterator over the elements of a `BinaryHeap`.
+/// A draining iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`drain`] method on [`BinaryHeap`]. See its
+/// This `struct` is created by the [`drain`] method on [`DaryHeap`]. See its
 /// documentation for more.
 ///
-/// [`drain`]: struct.BinaryHeap.html#method.drain
-/// [`BinaryHeap`]: struct.BinaryHeap.html
+/// [`drain`]: struct.DaryHeap.html#method.drain
+/// [`DaryHeap`]: struct.DaryHeap.html
 #[derive(Debug)]
 pub struct Drain<'a, T: 'a> {
     iter: vec::Drain<'a, T>,
@@ -1306,13 +1306,13 @@ impl<T> ExactSizeIterator for Drain<'_, T> {
 
 impl<T> FusedIterator for Drain<'_, T> {}
 
-/// A draining iterator over the elements of a `BinaryHeap`.
+/// A draining iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`drain_sorted`] method on [`BinaryHeap`]. See its
+/// This `struct` is created by the [`drain_sorted`] method on [`DaryHeap`]. See its
 /// documentation for more.
 ///
-/// [`drain_sorted`]: struct.BinaryHeap.html#method.drain_sorted
-/// [`BinaryHeap`]: struct.BinaryHeap.html
+/// [`drain_sorted`]: struct.DaryHeap.html#method.drain_sorted
+/// [`DaryHeap`]: struct.DaryHeap.html
 #[cfg(feature = "drain_sorted")]
 #[derive(Debug)]
 pub struct DrainSorted<'a, T: Ord, D: Dary> {
@@ -1365,7 +1365,7 @@ impl<T: Ord, D: Dary> FusedIterator for DrainSorted<'_, T, D> {}
 unsafe impl<T: Ord, D: Dary> TrustedLen for DrainSorted<'_, T, D> {}
 
 impl<T: Ord, D: Dary> From<Vec<T>> for DaryHeap<T, D> {
-    /// Converts a `Vec<T>` into a `BinaryHeap<T>`.
+    /// Converts a `Vec<T>` into a `DaryHeap<T, D>`.
     ///
     /// This conversion happens in-place, and has `O(n)` time complexity.
     fn from(vec: Vec<T>) -> DaryHeap<T, D> {
@@ -1395,7 +1395,7 @@ impl<T, D: Dary> IntoIterator for DaryHeap<T, D> {
     type IntoIter = IntoIter<T>;
 
     /// Creates a consuming iterator, that is, one that moves each value out of
-    /// the binary heap in arbitrary order. The binary heap cannot be used
+    /// the *d*-ary heap in arbitrary order. The *d*-ary heap cannot be used
     /// after calling this.
     ///
     /// # Examples
