@@ -208,9 +208,21 @@ macro_rules! dary {
 }
 
 dary!(D2, 2);
+dary!(D3, 3);
+dary!(D4, 4);
+dary!(D8, 8);
 
 /// A binary heap (*d* = 2).
 pub type BinaryHeap<T> = DaryHeap<T, D2>;
+
+/// A ternary heap (*d* = 3).
+pub type TernaryHeap<T> = DaryHeap<T, D3>;
+
+/// A quaternary heap (*d* = 4).
+pub type QuaternaryHeap<T> = DaryHeap<T, D4>;
+
+/// An octonary heap (*d* = 8).
+pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 
 /// A priority queue implemented with a binary heap.
 ///
@@ -573,7 +585,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
             let mut hole = Hole::new(&mut self.data, pos);
 
             while hole.pos() > start {
-                let parent = (hole.pos() - 1) / 2;
+                let parent = (hole.pos() - 1) / D::D;
                 if hole.element() <= hole.get(parent) {
                     break;
                 }
@@ -588,19 +600,20 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     fn sift_down_range(&mut self, pos: usize, end: usize) {
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
-            let mut child = 2 * pos + 1;
+            let mut child = D::D * pos + 1;
             while child < end {
-                let right = child + 1;
-                // compare with the greater of the two children
-                if right < end && hole.get(child) <= hole.get(right) {
-                    child = right;
+                // compare with the greatest of the d children
+                for other_child in child + 1..child + D::D {
+                    if other_child < end && hole.get(child) <= hole.get(other_child) {
+                        child = other_child;
+                    }
                 }
                 // if we are already in order, stop.
                 if hole.element() >= hole.get(child) {
                     break;
                 }
                 hole.move_to(child);
-                child = 2 * hole.pos() + 1;
+                child = D::D * hole.pos() + 1;
             }
         }
     }
@@ -620,15 +633,16 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         let start = pos;
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
-            let mut child = 2 * pos + 1;
+            let mut child = D::D * pos + 1;
             while child < end {
-                let right = child + 1;
-                // compare with the greater of the two children
-                if right < end && hole.get(child) <= hole.get(right) {
-                    child = right;
+                // compare with the greatest of the d children
+                for other_child in child + 1..child + D::D {
+                    if other_child < end && hole.get(child) <= hole.get(other_child) {
+                        child = other_child;
+                    }
                 }
                 hole.move_to(child);
-                child = 2 * hole.pos() + 1;
+                child = D::D * hole.pos() + 1;
             }
             pos = hole.pos;
         }
@@ -636,7 +650,10 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     }
 
     fn rebuild(&mut self) {
-        let mut n = self.len() / 2;
+        if self.len() < 2 {
+            return;
+        }
+        let mut n = (self.len() - 1) / D::D + 1;
         while n > 0 {
             n -= 1;
             self.sift_down(n);
@@ -677,6 +694,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
             8 * size_of::<usize>() - (x.leading_zeros() as usize) - 1
         }
 
+        // TODO re-evaluate these heuristics for d > 2
         // `rebuild` takes O(len1 + len2) operations
         // and about 2 * (len1 + len2) comparisons in the worst case
         // while `extend` takes O(len2 * log(len1)) operations
@@ -1455,5 +1473,67 @@ impl<'a, T: 'a + Ord + Copy, D: Dary> Extend<&'a T> for DaryHeap<T, D> {
     #[cfg(feature = "extend_one")]
     fn extend_reserve(&mut self, additional: usize) {
         self.reserve(additional);
+    }
+}
+
+#[cfg(test)]
+impl<T: Ord + fmt::Debug, D: Dary> DaryHeap<T, D> {
+    /// Panics if the heap is in an inconsistent state
+    #[track_caller]
+    pub fn assert_valid_state(&self) {
+        for (i, v) in self.iter().enumerate() {
+            let children = D::D * i + 1..D::D * i + D::D;
+            if children.start > self.len() {
+                break;
+            }
+            for j in children {
+                if let Some(x) = self.data.get(j) {
+                    assert!(v >= x);
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::{seq::SliceRandom, thread_rng};
+
+    fn pop<D: Dary>() {
+        let mut rng = thread_rng();
+        let ntest = 10;
+        let nelem = 1000;
+        for _ in 0..ntest {
+            let mut data: Vec<_> = (0..nelem).collect();
+            data.shuffle(&mut rng);
+            let mut heap = DaryHeap::<_, D>::from(data);
+            heap.assert_valid_state();
+            for i in (0..nelem).rev() {
+                assert_eq!(heap.pop(), Some(i));
+                heap.assert_valid_state();
+            }
+            assert_eq!(heap.pop(), None);
+        }
+    }
+
+    #[test]
+    fn pop_d2() {
+        pop::<D2>();
+    }
+
+    #[test]
+    fn pop_d3() {
+        pop::<D3>();
+    }
+
+    #[test]
+    fn pop_d4() {
+        pop::<D4>();
+    }
+
+    #[test]
+    fn pop_d8() {
+        pop::<D8>();
     }
 }
