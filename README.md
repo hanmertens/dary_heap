@@ -27,8 +27,6 @@ limited to nightly compilers:
   `exact_size_is_empty` on `ExactSizeIterator`s in this crate.
 - `extend_one`: implement methods defined by unstable feature `extend_one`.
 - `shrink_to`: adds `shrink_to` method to shrink heap capacity to a lower bound.
-- `specialization_extend`: use specialization to potentially speed up the
-  `extend` method when extending with another *d*-ary heap (with the same *d*).
 - `trusted_len`: implement `TrustedLen` for iterators if possible. Only has an
   effect when `drain_sorted` or `into_iter_sorted` is also enabled.
 

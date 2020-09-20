@@ -145,7 +145,6 @@
 #![cfg_attr(feature = "exact_size_is_empty", feature(exact_size_is_empty))]
 #![cfg_attr(feature = "extend_one", feature(extend_one))]
 #![cfg_attr(feature = "shrink_to", feature(shrink_to))]
-#![cfg_attr(feature = "specialization_extend", feature(min_specialization))]
 #![cfg_attr(feature = "trusted_len", feature(trusted_len))]
 #![allow(clippy::needless_doctest_main)]
 
@@ -161,12 +160,57 @@ use core::mem;
 
 use core::fmt;
 use core::iter::{FromIterator, FusedIterator};
+use core::marker::PhantomData;
 use core::mem::{size_of, swap, ManuallyDrop};
 use core::ops::{Deref, DerefMut};
 use core::ptr;
 use core::slice;
 
 use alloc::{vec, vec::Vec};
+
+/// Marker to specify *d* in a *d*-ary heap.
+pub trait Dary {
+    /// The value of *d*.
+    const D: usize;
+}
+
+/// Convenience macro to implement `Dary` for a specific number.
+///
+/// This macro implements [`Dary`] for a public unconstructable enum and adds
+/// documentation. The first argument is the name of the enum, the second the
+/// number *d*, and the optional third argument is a documentation string.
+///
+/// # Examples
+/// ```
+/// use dary_heap::{dary, DaryHeap};
+///
+/// dary!(D5, 5);
+/// type QuinaryHeap<T> = DaryHeap<T, D5>;
+///
+/// dary!(D6, 6, "Use for senary heap");
+/// type SenaryHeap<T> = DaryHeap<T, D6>;
+/// ```
+///
+/// [`Dary`]: trait.Dary.html
+#[macro_export]
+macro_rules! dary {
+    ($dary:ident, $num:expr) => {
+        dary!($dary, $num, concat!("Marker for *d* = ", stringify!($num), "."));
+    };
+    ($dary:ident, $num:expr, $doc:expr) => {
+        #[doc = $doc]
+        pub enum $dary {}
+
+        impl $crate::Dary for $dary {
+            const D: usize = $num;
+        }
+    };
+}
+
+dary!(D2, 2);
+
+/// A binary heap (*d* = 2).
+pub type BinaryHeap<T> = DaryHeap<T, D2>;
 
 /// A priority queue implemented with a binary heap.
 ///
@@ -257,8 +301,9 @@ use alloc::{vec, vec::Vec};
 /// [pop]: #method.pop
 /// [peek]: #method.peek
 /// [peek\_mut]: #method.peek_mut
-pub struct BinaryHeap<T> {
+pub struct DaryHeap<T, D: Dary> {
     data: Vec<T>,
+    marker: PhantomData<D>,
 }
 
 /// Structure wrapping a mutable reference to the greatest item on a
@@ -269,18 +314,18 @@ pub struct BinaryHeap<T> {
 ///
 /// [`peek_mut`]: struct.BinaryHeap.html#method.peek_mut
 /// [`BinaryHeap`]: struct.BinaryHeap.html
-pub struct PeekMut<'a, T: 'a + Ord> {
-    heap: &'a mut BinaryHeap<T>,
+pub struct PeekMut<'a, T: 'a + Ord, D: Dary> {
+    heap: &'a mut DaryHeap<T, D>,
     sift: bool,
 }
 
-impl<T: Ord + fmt::Debug> fmt::Debug for PeekMut<'_, T> {
+impl<T: Ord + fmt::Debug, D: Dary> fmt::Debug for PeekMut<'_, T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("PeekMut").field(&self.heap.data[0]).finish()
     }
 }
 
-impl<T: Ord> Drop for PeekMut<'_, T> {
+impl<T: Ord, D: Dary> Drop for PeekMut<'_, T, D> {
     fn drop(&mut self) {
         if self.sift {
             self.heap.sift_down(0);
@@ -288,7 +333,7 @@ impl<T: Ord> Drop for PeekMut<'_, T> {
     }
 }
 
-impl<T: Ord> Deref for PeekMut<'_, T> {
+impl<T: Ord, D: Dary> Deref for PeekMut<'_, T, D> {
     type Target = T;
     fn deref(&self) -> &T {
         debug_assert!(!self.heap.is_empty());
@@ -297,7 +342,7 @@ impl<T: Ord> Deref for PeekMut<'_, T> {
     }
 }
 
-impl<T: Ord> DerefMut for PeekMut<'_, T> {
+impl<T: Ord, D: Dary> DerefMut for PeekMut<'_, T, D> {
     fn deref_mut(&mut self) -> &mut T {
         debug_assert!(!self.heap.is_empty());
         // SAFE: PeekMut is only instantiated for non-empty heaps
@@ -305,19 +350,20 @@ impl<T: Ord> DerefMut for PeekMut<'_, T> {
     }
 }
 
-impl<'a, T: Ord> PeekMut<'a, T> {
+impl<'a, T: Ord, D: Dary> PeekMut<'a, T, D> {
     /// Removes the peeked value from the heap and returns it.
-    pub fn pop(mut this: PeekMut<'a, T>) -> T {
+    pub fn pop(mut this: PeekMut<'a, T, D>) -> T {
         let value = this.heap.pop().unwrap();
         this.sift = false;
         value
     }
 }
 
-impl<T: Clone> Clone for BinaryHeap<T> {
+impl<T: Clone, D: Dary> Clone for DaryHeap<T, D> {
     fn clone(&self) -> Self {
-        BinaryHeap {
+        DaryHeap {
             data: self.data.clone(),
+            marker: PhantomData,
         }
     }
 
@@ -326,21 +372,21 @@ impl<T: Clone> Clone for BinaryHeap<T> {
     }
 }
 
-impl<T: Ord> Default for BinaryHeap<T> {
+impl<T: Ord, D: Dary> Default for DaryHeap<T, D> {
     /// Creates an empty `BinaryHeap<T>`.
     #[inline]
-    fn default() -> BinaryHeap<T> {
-        BinaryHeap::new()
+    fn default() -> DaryHeap<T, D> {
+        DaryHeap::new()
     }
 }
 
-impl<T: fmt::Debug> fmt::Debug for BinaryHeap<T> {
+impl<T: fmt::Debug, D: Dary> fmt::Debug for DaryHeap<T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
     }
 }
 
-impl<T: Ord> BinaryHeap<T> {
+impl<T: Ord, D: Dary> DaryHeap<T, D> {
     /// Creates an empty `BinaryHeap` as a max-heap.
     ///
     /// # Examples
@@ -352,8 +398,11 @@ impl<T: Ord> BinaryHeap<T> {
     /// let mut heap = BinaryHeap::new();
     /// heap.push(4);
     /// ```
-    pub fn new() -> BinaryHeap<T> {
-        BinaryHeap { data: vec![] }
+    pub fn new() -> DaryHeap<T, D> {
+        DaryHeap {
+            data: vec![],
+            marker: PhantomData,
+        }
     }
 
     /// Creates an empty `BinaryHeap` with a specific capacity.
@@ -370,9 +419,10 @@ impl<T: Ord> BinaryHeap<T> {
     /// let mut heap = BinaryHeap::with_capacity(10);
     /// heap.push(4);
     /// ```
-    pub fn with_capacity(capacity: usize) -> BinaryHeap<T> {
-        BinaryHeap {
+    pub fn with_capacity(capacity: usize) -> DaryHeap<T, D> {
+        DaryHeap {
             data: Vec::with_capacity(capacity),
+            marker: PhantomData,
         }
     }
 
@@ -404,7 +454,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// # Time complexity
     ///
     /// Cost is `O(1)` in the worst case.
-    pub fn peek_mut(&mut self) -> Option<PeekMut<'_, T>> {
+    pub fn peek_mut(&mut self) -> Option<PeekMut<'_, T, D>> {
         if self.is_empty() {
             None
         } else {
@@ -668,7 +718,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// ```
     #[inline]
     #[cfg(feature = "drain_sorted")]
-    pub fn drain_sorted(&mut self) -> DrainSorted<'_, T> {
+    pub fn drain_sorted(&mut self) -> DrainSorted<'_, T, D> {
         DrainSorted { inner: self }
     }
 
@@ -700,7 +750,7 @@ impl<T: Ord> BinaryHeap<T> {
     }
 }
 
-impl<T> BinaryHeap<T> {
+impl<T, D: Dary> DaryHeap<T, D> {
     /// Returns an iterator visiting all values in the underlying vector, in
     /// arbitrary order.
     ///
@@ -737,7 +787,7 @@ impl<T> BinaryHeap<T> {
     /// assert_eq!(heap.into_iter_sorted().take(2).collect::<Vec<_>>(), vec![5, 4]);
     /// ```
     #[cfg(feature = "into_iter_sorted")]
-    pub fn into_iter_sorted(self) -> IntoIterSorted<T> {
+    pub fn into_iter_sorted(self) -> IntoIterSorted<T, D> {
         IntoIterSorted { inner: self }
     }
 
@@ -1167,12 +1217,12 @@ impl<T> FusedIterator for IntoIter<T> {}
 
 #[cfg(feature = "into_iter_sorted")]
 #[derive(Clone, Debug)]
-pub struct IntoIterSorted<T> {
-    inner: BinaryHeap<T>,
+pub struct IntoIterSorted<T, D: Dary> {
+    inner: DaryHeap<T, D>,
 }
 
 #[cfg(feature = "into_iter_sorted")]
-impl<T: Ord> Iterator for IntoIterSorted<T> {
+impl<T: Ord, D: Dary> Iterator for IntoIterSorted<T, D> {
     type Item = T;
 
     #[inline]
@@ -1188,13 +1238,13 @@ impl<T: Ord> Iterator for IntoIterSorted<T> {
 }
 
 #[cfg(feature = "into_iter_sorted")]
-impl<T: Ord> ExactSizeIterator for IntoIterSorted<T> {}
+impl<T: Ord, D: Dary> ExactSizeIterator for IntoIterSorted<T, D> {}
 
 #[cfg(feature = "into_iter_sorted")]
-impl<T: Ord> FusedIterator for IntoIterSorted<T> {}
+impl<T: Ord, D: Dary> FusedIterator for IntoIterSorted<T, D> {}
 
 #[cfg(all(feature = "into_iter_sorted", feature = "trusted_len"))]
-unsafe impl<T: Ord> TrustedLen for IntoIterSorted<T> {}
+unsafe impl<T: Ord, D: Dary> TrustedLen for IntoIterSorted<T, D> {}
 
 /// A draining iterator over the elements of a `BinaryHeap`.
 ///
@@ -1247,17 +1297,17 @@ impl<T> FusedIterator for Drain<'_, T> {}
 /// [`BinaryHeap`]: struct.BinaryHeap.html
 #[cfg(feature = "drain_sorted")]
 #[derive(Debug)]
-pub struct DrainSorted<'a, T: Ord> {
-    inner: &'a mut BinaryHeap<T>,
+pub struct DrainSorted<'a, T: Ord, D: Dary> {
+    inner: &'a mut DaryHeap<T, D>,
 }
 
 #[cfg(feature = "drain_sorted")]
-impl<'a, T: Ord> Drop for DrainSorted<'a, T> {
+impl<'a, T: Ord, D: Dary> Drop for DrainSorted<'a, T, D> {
     /// Removes heap elements in heap order.
     fn drop(&mut self) {
-        struct DropGuard<'r, 'a, T: Ord>(&'r mut DrainSorted<'a, T>);
+        struct DropGuard<'r, 'a, T: Ord, D: Dary>(&'r mut DrainSorted<'a, T, D>);
 
-        impl<'r, 'a, T: Ord> Drop for DropGuard<'r, 'a, T> {
+        impl<'r, 'a, T: Ord, D: Dary> Drop for DropGuard<'r, 'a, T, D> {
             fn drop(&mut self) {
                 while self.0.inner.pop().is_some() {}
             }
@@ -1272,7 +1322,7 @@ impl<'a, T: Ord> Drop for DrainSorted<'a, T> {
 }
 
 #[cfg(feature = "drain_sorted")]
-impl<T: Ord> Iterator for DrainSorted<'_, T> {
+impl<T: Ord, D: Dary> Iterator for DrainSorted<'_, T, D> {
     type Item = T;
 
     #[inline]
@@ -1288,38 +1338,41 @@ impl<T: Ord> Iterator for DrainSorted<'_, T> {
 }
 
 #[cfg(feature = "drain_sorted")]
-impl<T: Ord> ExactSizeIterator for DrainSorted<'_, T> {}
+impl<T: Ord, D: Dary> ExactSizeIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(feature = "drain_sorted")]
-impl<T: Ord> FusedIterator for DrainSorted<'_, T> {}
+impl<T: Ord, D: Dary> FusedIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(all(feature = "drain_sorted", feature = "trusted_len"))]
-unsafe impl<T: Ord> TrustedLen for DrainSorted<'_, T> {}
+unsafe impl<T: Ord, D: Dary> TrustedLen for DrainSorted<'_, T, D> {}
 
-impl<T: Ord> From<Vec<T>> for BinaryHeap<T> {
+impl<T: Ord, D: Dary> From<Vec<T>> for DaryHeap<T, D> {
     /// Converts a `Vec<T>` into a `BinaryHeap<T>`.
     ///
     /// This conversion happens in-place, and has `O(n)` time complexity.
-    fn from(vec: Vec<T>) -> BinaryHeap<T> {
-        let mut heap = BinaryHeap { data: vec };
+    fn from(vec: Vec<T>) -> DaryHeap<T, D> {
+        let mut heap = DaryHeap {
+            data: vec,
+            marker: PhantomData,
+        };
         heap.rebuild();
         heap
     }
 }
 
-impl<T> From<BinaryHeap<T>> for Vec<T> {
-    fn from(heap: BinaryHeap<T>) -> Vec<T> {
+impl<T, D: Dary> From<DaryHeap<T, D>> for Vec<T> {
+    fn from(heap: DaryHeap<T, D>) -> Vec<T> {
         heap.data
     }
 }
 
-impl<T: Ord> FromIterator<T> for BinaryHeap<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> BinaryHeap<T> {
-        BinaryHeap::from(iter.into_iter().collect::<Vec<_>>())
+impl<T: Ord, D: Dary> FromIterator<T> for DaryHeap<T, D> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> DaryHeap<T, D> {
+        DaryHeap::from(iter.into_iter().collect::<Vec<_>>())
     }
 }
 
-impl<T> IntoIterator for BinaryHeap<T> {
+impl<T, D: Dary> IntoIterator for DaryHeap<T, D> {
     type Item = T;
     type IntoIter = IntoIter<T>;
 
@@ -1348,7 +1401,7 @@ impl<T> IntoIterator for BinaryHeap<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a BinaryHeap<T> {
+impl<'a, T, D: Dary> IntoIterator for &'a DaryHeap<T, D> {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
@@ -1357,10 +1410,10 @@ impl<'a, T> IntoIterator for &'a BinaryHeap<T> {
     }
 }
 
-impl<T: Ord> Extend<T> for BinaryHeap<T> {
+impl<T: Ord, D: Dary> Extend<T> for DaryHeap<T, D> {
     #[inline]
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
-        <Self as SpecExtend<I>>::spec_extend(self, iter);
+        self.extend_desugared(iter.into_iter());
     }
 
     #[inline]
@@ -1376,30 +1429,7 @@ impl<T: Ord> Extend<T> for BinaryHeap<T> {
     }
 }
 
-trait SpecExtend<I> {
-    fn spec_extend(&mut self, iter: I);
-}
-
-impl<T: Ord, I: IntoIterator<Item = T>> SpecExtend<I> for BinaryHeap<T> {
-    #[cfg(feature = "specialization_extend")]
-    default fn spec_extend(&mut self, iter: I) {
-        self.extend_desugared(iter.into_iter());
-    }
-
-    #[cfg(not(feature = "specialization_extend"))]
-    fn spec_extend(&mut self, iter: I) {
-        self.extend_desugared(iter.into_iter());
-    }
-}
-
-#[cfg(feature = "specialization_extend")]
-impl<T: Ord> SpecExtend<BinaryHeap<T>> for BinaryHeap<T> {
-    fn spec_extend(&mut self, ref mut other: BinaryHeap<T>) {
-        self.append(other);
-    }
-}
-
-impl<T: Ord> BinaryHeap<T> {
+impl<T: Ord, D: Dary> DaryHeap<T, D> {
     fn extend_desugared<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         let iterator = iter.into_iter();
         let (lower, _) = iterator.size_hint();
@@ -1410,7 +1440,7 @@ impl<T: Ord> BinaryHeap<T> {
     }
 }
 
-impl<'a, T: 'a + Ord + Copy> Extend<&'a T> for BinaryHeap<T> {
+impl<'a, T: 'a + Ord + Copy, D: Dary> Extend<&'a T> for DaryHeap<T, D> {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
     }

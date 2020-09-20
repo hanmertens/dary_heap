@@ -15,7 +15,6 @@ categories = ["data-structures"]
 exact_size_is_empty = []
 extend_one = []
 shrink_to = []
-specialization_extend = []
 trusted_len = []
 # Features available on stable
 drain_sorted = []
