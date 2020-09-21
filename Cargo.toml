@@ -22,4 +22,9 @@ into_iter_sorted = []
 retain = []
 
 [dev-dependencies]
+criterion = "0.3"
 rand = "0.7"
+
+[[bench]]
+name = "dary_heap"
+harness = false
