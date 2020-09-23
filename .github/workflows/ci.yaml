@@ -1,0 +1,72 @@
+name: CI
+on: [push, pull_request]
+
+env:
+  RUST_BACKTRACE: full
+  RUSTFLAGS: -D warnings
+  CARGO_TERM_VERBOSE: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [stable, beta, nightly, macos, windows]
+        include:
+          - build: stable
+            os: ubuntu-latest
+            rust: stable
+          - build: beta
+            os: ubuntu-latest
+            rust: beta
+          - build: nightly
+            os: ubuntu-latest
+            rust: nightly
+          - build: macos
+            os: macos-latest
+            rust: stable
+          - build: windows
+            os: windows-latest
+            rust: stable
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+        profile: minimal
+    - name: Build
+      run: cargo build
+    - name: Test
+      run: cargo test
+    - name: Build with stable features
+      run: cargo build --features "drain_sorted into_iter_sorted retain"
+    - name: Test with stable features
+      run: cargo test --features "drain_sorted into_iter_sorted retain"
+    - name: Build with stable and nightly features
+      if: matrix.rust == 'nightly'
+      run: cargo build --all-features
+    - name: Test with stable and nightly features
+      if: matrix.rust == 'nightly'
+      run: cargo test --all-features
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - name: Check clippy
+      run: cargo clippy
+    - name: Check formatting
+      run: cargo fmt -- --check
+    - name: Check documentation
+      run: cargo doc --no-deps
