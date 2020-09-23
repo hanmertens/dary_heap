@@ -1477,7 +1477,7 @@ impl<'a, T: 'a + Ord + Copy, D: Dary> Extend<&'a T> for DaryHeap<T, D> {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, fuzzing))]
 impl<T: Ord + fmt::Debug, D: Dary> DaryHeap<T, D> {
     /// Panics if the heap is in an inconsistent state
     #[track_caller]
