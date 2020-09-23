@@ -83,5 +83,46 @@ heap_bench!(make_heap, make_std_heap, make_dary_heap);
 heap_bench!(pop, std_heap_pop, dary_heap_pop, Vec::into);
 heap_bench!(push, std_heap_push, dary_heap_push, push_data);
 
-criterion_group!(benches, make_heap, pop, push);
+fn append(c: &mut Criterion) {
+    fn data<H: From<Vec<T>>>(mut vec1: Vec<T>, i: usize) -> (H, H) {
+        let vec2 = vec1.split_off(i);
+        (vec1.into(), vec2.into())
+    }
+
+    fn std_fn((mut heap1, mut heap2): (BinaryHeap<T>, BinaryHeap<T>)) -> BinaryHeap<T> {
+        heap1.append(&mut heap2);
+        heap1
+    }
+
+    fn dary_fn<D: Dary>(
+        (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
+    ) -> DaryHeap<T, D> {
+        heap1.append(&mut heap2);
+        heap1
+    }
+
+    let mut group = c.benchmark_group("append");
+    let base = 1000;
+    let step = 25;
+    for i in (step..=base as usize / 2).step_by(step) {
+        let size = BatchSize::SmallInput;
+        group.bench_function(BenchmarkId::new("BinaryHeap", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), std_fn, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D2>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D2>, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D3>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D3>, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D4>, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D8>, size)
+        });
+    }
+}
+
+criterion_group!(benches, make_heap, pop, push, append);
 criterion_main!(benches);

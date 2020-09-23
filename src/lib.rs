@@ -694,18 +694,19 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
             8 * size_of::<usize>() - (x.leading_zeros() as usize) - 1
         }
 
-        // TODO re-evaluate these heuristics for d > 2
         // `rebuild` takes O(len1 + len2) operations
-        // and about 2 * (len1 + len2) comparisons in the worst case
+        // and about n * (len1 + len2) comparisons in the worst case
+        // with n = d / (d - 1)
         // while `extend` takes O(len2 * log(len1)) operations
-        // and about 1 * len2 * log_2(len1) comparisons in the worst case,
+        // and about 1 * len2 * log_d(len1) comparisons in the worst case,
         // assuming len1 >= len2.
         #[inline]
-        fn better_to_rebuild(len1: usize, len2: usize) -> bool {
-            2 * (len1 + len2) < len2 * log2_fast(len1)
+        fn better_to_rebuild<D: Dary>(len1: usize, len2: usize) -> bool {
+            let logd_len1 = log2_fast(len1) / log2_fast(D::D);
+            D::D * (len1 + len2) < (D::D - 1) * len2 * logd_len1
         }
 
-        if better_to_rebuild(self.len(), other.len()) {
+        if better_to_rebuild::<D>(self.len(), other.len()) {
             self.data.append(&mut other.data);
             self.rebuild();
         } else {
