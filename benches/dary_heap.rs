@@ -1,5 +1,5 @@
 use criterion::*;
-use dary_heap::{Dary, DaryHeap, D2, D3, D4, D8};
+use dary_heap::{Arity, DaryHeap, D2, D3, D4, D8};
 use rand::{seq::SliceRandom, thread_rng};
 use std::collections::BinaryHeap;
 use std::convert::identity;
@@ -19,7 +19,7 @@ fn make_std_heap(data: Vec<T>) -> BinaryHeap<T> {
     BinaryHeap::from(data)
 }
 
-fn make_dary_heap<D: Dary>(data: Vec<T>) -> DaryHeap<T, D> {
+fn make_dary_heap<D: Arity>(data: Vec<T>) -> DaryHeap<T, D> {
     DaryHeap::<T, D>::from(data)
 }
 
@@ -28,7 +28,7 @@ fn std_heap_pop(mut heap: BinaryHeap<T>) -> BinaryHeap<T> {
     heap
 }
 
-fn dary_heap_pop<D: Dary>(mut heap: DaryHeap<T, D>) -> DaryHeap<T, D> {
+fn dary_heap_pop<D: Arity>(mut heap: DaryHeap<T, D>) -> DaryHeap<T, D> {
     heap.pop();
     heap
 }
@@ -38,7 +38,7 @@ fn std_heap_push((mut heap, elem): (BinaryHeap<T>, T)) -> BinaryHeap<T> {
     heap
 }
 
-fn dary_heap_push<D: Dary>((mut heap, elem): (DaryHeap<T, D>, T)) -> DaryHeap<T, D> {
+fn dary_heap_push<D: Arity>((mut heap, elem): (DaryHeap<T, D>, T)) -> DaryHeap<T, D> {
     heap.push(elem);
     heap
 }
@@ -94,7 +94,7 @@ fn append(c: &mut Criterion) {
         heap1
     }
 
-    fn dary_fn<D: Dary>(
+    fn dary_fn<D: Arity>(
         (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
     ) -> DaryHeap<T, D> {
         heap1.append(&mut heap2);

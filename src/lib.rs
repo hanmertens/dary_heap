@@ -168,49 +168,49 @@ use core::slice;
 
 use alloc::{vec, vec::Vec};
 
-/// Marker to specify *d* in a *d*-ary heap.
-pub trait Dary {
+/// Marker to specify arity *d* in a *d*-ary heap.
+pub trait Arity {
     /// The value of *d*.
     const D: usize;
 }
 
-/// Convenience macro to implement `Dary` for a specific number.
+/// Convenience macro to implement `Arity` for a specific number.
 ///
-/// This macro implements [`Dary`] for a public unconstructable enum and adds
+/// This macro implements [`Arity`] for a public unconstructable enum and adds
 /// documentation. The first argument is the name of the enum, the second the
 /// number *d*, and the optional third argument is a documentation string.
 ///
 /// # Examples
 /// ```
-/// use dary_heap::{dary, DaryHeap};
+/// use dary_heap::{arity, DaryHeap};
 ///
-/// dary!(D5, 5);
+/// arity!(D5, 5);
 /// type QuinaryHeap<T> = DaryHeap<T, D5>;
 ///
-/// dary!(D6, 6, "Use for senary heap");
+/// arity!(D6, 6, "Use for senary heap");
 /// type SenaryHeap<T> = DaryHeap<T, D6>;
 /// ```
 ///
-/// [`Dary`]: trait.Dary.html
+/// [`Arity`]: trait.Arity.html
 #[macro_export]
-macro_rules! dary {
-    ($dary:ident, $num:expr) => {
-        dary!($dary, $num, concat!("Marker for *d* = ", stringify!($num), "."));
+macro_rules! arity {
+    ($arity:ident, $num:expr) => {
+        arity!($arity, $num, concat!("Marker for arity *d* = ", stringify!($num), "."));
     };
-    ($dary:ident, $num:expr, $doc:expr) => {
+    ($arity:ident, $num:expr, $doc:expr) => {
         #[doc = $doc]
-        pub enum $dary {}
+        pub enum $arity {}
 
-        impl $crate::Dary for $dary {
+        impl $crate::Arity for $arity {
             const D: usize = $num;
         }
     };
 }
 
-dary!(D2, 2);
-dary!(D3, 3);
-dary!(D4, 4);
-dary!(D8, 8);
+arity!(D2, 2);
+arity!(D3, 3);
+arity!(D4, 4);
+arity!(D8, 8);
 
 /// A binary heap (*d* = 2).
 pub type BinaryHeap<T> = DaryHeap<T, D2>;
@@ -313,7 +313,7 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// [pop]: #method.pop
 /// [peek]: #method.peek
 /// [peek\_mut]: #method.peek_mut
-pub struct DaryHeap<T, D: Dary> {
+pub struct DaryHeap<T, D: Arity> {
     data: Vec<T>,
     marker: PhantomData<D>,
 }
@@ -326,18 +326,18 @@ pub struct DaryHeap<T, D: Dary> {
 ///
 /// [`peek_mut`]: struct.DaryHeap.html#method.peek_mut
 /// [`DaryHeap`]: struct.DaryHeap.html
-pub struct PeekMut<'a, T: 'a + Ord, D: Dary> {
+pub struct PeekMut<'a, T: 'a + Ord, D: Arity> {
     heap: &'a mut DaryHeap<T, D>,
     sift: bool,
 }
 
-impl<T: Ord + fmt::Debug, D: Dary> fmt::Debug for PeekMut<'_, T, D> {
+impl<T: Ord + fmt::Debug, D: Arity> fmt::Debug for PeekMut<'_, T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("PeekMut").field(&self.heap.data[0]).finish()
     }
 }
 
-impl<T: Ord, D: Dary> Drop for PeekMut<'_, T, D> {
+impl<T: Ord, D: Arity> Drop for PeekMut<'_, T, D> {
     fn drop(&mut self) {
         if self.sift {
             self.heap.sift_down(0);
@@ -345,7 +345,7 @@ impl<T: Ord, D: Dary> Drop for PeekMut<'_, T, D> {
     }
 }
 
-impl<T: Ord, D: Dary> Deref for PeekMut<'_, T, D> {
+impl<T: Ord, D: Arity> Deref for PeekMut<'_, T, D> {
     type Target = T;
     fn deref(&self) -> &T {
         debug_assert!(!self.heap.is_empty());
@@ -354,7 +354,7 @@ impl<T: Ord, D: Dary> Deref for PeekMut<'_, T, D> {
     }
 }
 
-impl<T: Ord, D: Dary> DerefMut for PeekMut<'_, T, D> {
+impl<T: Ord, D: Arity> DerefMut for PeekMut<'_, T, D> {
     fn deref_mut(&mut self) -> &mut T {
         debug_assert!(!self.heap.is_empty());
         // SAFE: PeekMut is only instantiated for non-empty heaps
@@ -362,7 +362,7 @@ impl<T: Ord, D: Dary> DerefMut for PeekMut<'_, T, D> {
     }
 }
 
-impl<'a, T: Ord, D: Dary> PeekMut<'a, T, D> {
+impl<'a, T: Ord, D: Arity> PeekMut<'a, T, D> {
     /// Removes the peeked value from the heap and returns it.
     pub fn pop(mut this: PeekMut<'a, T, D>) -> T {
         let value = this.heap.pop().unwrap();
@@ -371,7 +371,7 @@ impl<'a, T: Ord, D: Dary> PeekMut<'a, T, D> {
     }
 }
 
-impl<T: Clone, D: Dary> Clone for DaryHeap<T, D> {
+impl<T: Clone, D: Arity> Clone for DaryHeap<T, D> {
     fn clone(&self) -> Self {
         DaryHeap {
             data: self.data.clone(),
@@ -384,7 +384,7 @@ impl<T: Clone, D: Dary> Clone for DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, D: Dary> Default for DaryHeap<T, D> {
+impl<T: Ord, D: Arity> Default for DaryHeap<T, D> {
     /// Creates an empty `DaryHeap<T, D>`.
     #[inline]
     fn default() -> DaryHeap<T, D> {
@@ -392,13 +392,13 @@ impl<T: Ord, D: Dary> Default for DaryHeap<T, D> {
     }
 }
 
-impl<T: fmt::Debug, D: Dary> fmt::Debug for DaryHeap<T, D> {
+impl<T: fmt::Debug, D: Arity> fmt::Debug for DaryHeap<T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
     }
 }
 
-impl<T: Ord, D: Dary> DaryHeap<T, D> {
+impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// Creates an empty `DaryHeap` as a max-heap.
     ///
     /// # Examples
@@ -701,7 +701,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
         // and about 1 * len2 * log_d(len1) comparisons in the worst case,
         // assuming len1 >= len2.
         #[inline]
-        fn better_to_rebuild<D: Dary>(len1: usize, len2: usize) -> bool {
+        fn better_to_rebuild<D: Arity>(len1: usize, len2: usize) -> bool {
             let logd_len1 = log2_fast(len1) / log2_fast(D::D);
             D::D * (len1 + len2) < (D::D - 1) * len2 * logd_len1
         }
@@ -769,7 +769,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     }
 }
 
-impl<T, D: Dary> DaryHeap<T, D> {
+impl<T, D: Arity> DaryHeap<T, D> {
     /// Returns an iterator visiting all values in the underlying vector, in
     /// arbitrary order.
     ///
@@ -1236,12 +1236,12 @@ impl<T> FusedIterator for IntoIter<T> {}
 
 #[cfg(feature = "into_iter_sorted")]
 #[derive(Clone, Debug)]
-pub struct IntoIterSorted<T, D: Dary> {
+pub struct IntoIterSorted<T, D: Arity> {
     inner: DaryHeap<T, D>,
 }
 
 #[cfg(feature = "into_iter_sorted")]
-impl<T: Ord, D: Dary> Iterator for IntoIterSorted<T, D> {
+impl<T: Ord, D: Arity> Iterator for IntoIterSorted<T, D> {
     type Item = T;
 
     #[inline]
@@ -1257,13 +1257,13 @@ impl<T: Ord, D: Dary> Iterator for IntoIterSorted<T, D> {
 }
 
 #[cfg(feature = "into_iter_sorted")]
-impl<T: Ord, D: Dary> ExactSizeIterator for IntoIterSorted<T, D> {}
+impl<T: Ord, D: Arity> ExactSizeIterator for IntoIterSorted<T, D> {}
 
 #[cfg(feature = "into_iter_sorted")]
-impl<T: Ord, D: Dary> FusedIterator for IntoIterSorted<T, D> {}
+impl<T: Ord, D: Arity> FusedIterator for IntoIterSorted<T, D> {}
 
 #[cfg(all(feature = "into_iter_sorted", feature = "trusted_len"))]
-unsafe impl<T: Ord, D: Dary> TrustedLen for IntoIterSorted<T, D> {}
+unsafe impl<T: Ord, D: Arity> TrustedLen for IntoIterSorted<T, D> {}
 
 /// A draining iterator over the elements of a `DaryHeap`.
 ///
@@ -1316,17 +1316,17 @@ impl<T> FusedIterator for Drain<'_, T> {}
 /// [`DaryHeap`]: struct.DaryHeap.html
 #[cfg(feature = "drain_sorted")]
 #[derive(Debug)]
-pub struct DrainSorted<'a, T: Ord, D: Dary> {
+pub struct DrainSorted<'a, T: Ord, D: Arity> {
     inner: &'a mut DaryHeap<T, D>,
 }
 
 #[cfg(feature = "drain_sorted")]
-impl<'a, T: Ord, D: Dary> Drop for DrainSorted<'a, T, D> {
+impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
     /// Removes heap elements in heap order.
     fn drop(&mut self) {
-        struct DropGuard<'r, 'a, T: Ord, D: Dary>(&'r mut DrainSorted<'a, T, D>);
+        struct DropGuard<'r, 'a, T: Ord, D: Arity>(&'r mut DrainSorted<'a, T, D>);
 
-        impl<'r, 'a, T: Ord, D: Dary> Drop for DropGuard<'r, 'a, T, D> {
+        impl<'r, 'a, T: Ord, D: Arity> Drop for DropGuard<'r, 'a, T, D> {
             fn drop(&mut self) {
                 while self.0.inner.pop().is_some() {}
             }
@@ -1341,7 +1341,7 @@ impl<'a, T: Ord, D: Dary> Drop for DrainSorted<'a, T, D> {
 }
 
 #[cfg(feature = "drain_sorted")]
-impl<T: Ord, D: Dary> Iterator for DrainSorted<'_, T, D> {
+impl<T: Ord, D: Arity> Iterator for DrainSorted<'_, T, D> {
     type Item = T;
 
     #[inline]
@@ -1357,15 +1357,15 @@ impl<T: Ord, D: Dary> Iterator for DrainSorted<'_, T, D> {
 }
 
 #[cfg(feature = "drain_sorted")]
-impl<T: Ord, D: Dary> ExactSizeIterator for DrainSorted<'_, T, D> {}
+impl<T: Ord, D: Arity> ExactSizeIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(feature = "drain_sorted")]
-impl<T: Ord, D: Dary> FusedIterator for DrainSorted<'_, T, D> {}
+impl<T: Ord, D: Arity> FusedIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(all(feature = "drain_sorted", feature = "trusted_len"))]
-unsafe impl<T: Ord, D: Dary> TrustedLen for DrainSorted<'_, T, D> {}
+unsafe impl<T: Ord, D: Arity> TrustedLen for DrainSorted<'_, T, D> {}
 
-impl<T: Ord, D: Dary> From<Vec<T>> for DaryHeap<T, D> {
+impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
     /// Converts a `Vec<T>` into a `DaryHeap<T, D>`.
     ///
     /// This conversion happens in-place, and has `O(n)` time complexity.
@@ -1379,19 +1379,19 @@ impl<T: Ord, D: Dary> From<Vec<T>> for DaryHeap<T, D> {
     }
 }
 
-impl<T, D: Dary> From<DaryHeap<T, D>> for Vec<T> {
+impl<T, D: Arity> From<DaryHeap<T, D>> for Vec<T> {
     fn from(heap: DaryHeap<T, D>) -> Vec<T> {
         heap.data
     }
 }
 
-impl<T: Ord, D: Dary> FromIterator<T> for DaryHeap<T, D> {
+impl<T: Ord, D: Arity> FromIterator<T> for DaryHeap<T, D> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> DaryHeap<T, D> {
         DaryHeap::from(iter.into_iter().collect::<Vec<_>>())
     }
 }
 
-impl<T, D: Dary> IntoIterator for DaryHeap<T, D> {
+impl<T, D: Arity> IntoIterator for DaryHeap<T, D> {
     type Item = T;
     type IntoIter = IntoIter<T>;
 
@@ -1420,7 +1420,7 @@ impl<T, D: Dary> IntoIterator for DaryHeap<T, D> {
     }
 }
 
-impl<'a, T, D: Dary> IntoIterator for &'a DaryHeap<T, D> {
+impl<'a, T, D: Arity> IntoIterator for &'a DaryHeap<T, D> {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
@@ -1429,7 +1429,7 @@ impl<'a, T, D: Dary> IntoIterator for &'a DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, D: Dary> Extend<T> for DaryHeap<T, D> {
+impl<T: Ord, D: Arity> Extend<T> for DaryHeap<T, D> {
     #[inline]
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         self.extend_desugared(iter.into_iter());
@@ -1448,7 +1448,7 @@ impl<T: Ord, D: Dary> Extend<T> for DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, D: Dary> DaryHeap<T, D> {
+impl<T: Ord, D: Arity> DaryHeap<T, D> {
     fn extend_desugared<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         let iterator = iter.into_iter();
         let (lower, _) = iterator.size_hint();
@@ -1459,7 +1459,7 @@ impl<T: Ord, D: Dary> DaryHeap<T, D> {
     }
 }
 
-impl<'a, T: 'a + Ord + Copy, D: Dary> Extend<&'a T> for DaryHeap<T, D> {
+impl<'a, T: 'a + Ord + Copy, D: Arity> Extend<&'a T> for DaryHeap<T, D> {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
     }
@@ -1478,7 +1478,7 @@ impl<'a, T: 'a + Ord + Copy, D: Dary> Extend<&'a T> for DaryHeap<T, D> {
 }
 
 #[cfg(any(test, fuzzing))]
-impl<T: Ord + fmt::Debug, D: Dary> DaryHeap<T, D> {
+impl<T: Ord + fmt::Debug, D: Arity> DaryHeap<T, D> {
     /// Panics if the heap is in an inconsistent state
     #[track_caller]
     pub fn assert_valid_state(&self) {
@@ -1501,7 +1501,7 @@ mod tests {
     use super::*;
     use rand::{seq::SliceRandom, thread_rng};
 
-    fn pop<D: Dary>() {
+    fn pop<D: Arity>() {
         let mut rng = thread_rng();
         let ntest = 10;
         let nelem = 1000;
