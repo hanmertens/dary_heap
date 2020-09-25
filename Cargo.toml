@@ -10,6 +10,10 @@ readme = "README.md"
 keywords = ["heap", "priority-queue"]
 categories = ["data-structures"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [features]
 # Features requiring nightly
 exact_size_is_empty = []

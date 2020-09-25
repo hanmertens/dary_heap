@@ -2,8 +2,6 @@
 #![cfg_attr(feature = "exact_size_is_empty", feature(exact_size_is_empty))]
 
 use dary_heap::{BinaryHeap, Drain, PeekMut};
-#[cfg(feature = "trusted_len")]
-use std::iter::TrustedLen;
 
 #[test]
 fn test_iterator() {
@@ -110,7 +108,7 @@ fn test_exact_size_iterator() {
 }
 
 #[cfg(feature = "trusted_len")]
-fn check_trusted_len<I: TrustedLen>(len: usize, it: I) {
+fn check_trusted_len<I: std::iter::TrustedLen>(len: usize, it: I) {
     let mut it = it;
     for i in 0..len {
         let (lower, upper) = it.size_hint();

@@ -146,17 +146,10 @@
 #![cfg_attr(feature = "extend_one", feature(extend_one))]
 #![cfg_attr(feature = "shrink_to", feature(shrink_to))]
 #![cfg_attr(feature = "trusted_len", feature(trusted_len))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::needless_doctest_main)]
 
 extern crate alloc;
-
-#[cfg(all(
-    feature = "trusted_len",
-    any(feature = "drain_sorted", feature = "into_iter_sorted")
-))]
-use core::iter::TrustedLen;
-#[cfg(feature = "drain_sorted")]
-use core::mem;
 
 use core::fmt;
 use core::iter::{FromIterator, FusedIterator};
@@ -737,6 +730,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// ```
     #[inline]
     #[cfg(feature = "drain_sorted")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "drain_sorted")))]
     pub fn drain_sorted(&mut self) -> DrainSorted<'_, T, D> {
         DrainSorted { inner: self }
     }
@@ -760,6 +754,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// assert_eq!(heap.into_sorted_vec(), [-10, 2, 4])
     /// ```
     #[cfg(feature = "retain")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "retain")))]
     pub fn retain<F>(&mut self, f: F)
     where
         F: FnMut(&T) -> bool,
@@ -806,6 +801,7 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// assert_eq!(heap.into_iter_sorted().take(2).collect::<Vec<_>>(), vec![5, 4]);
     /// ```
     #[cfg(feature = "into_iter_sorted")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "into_iter_sorted")))]
     pub fn into_iter_sorted(self) -> IntoIterSorted<T, D> {
         IntoIterSorted { inner: self }
     }
@@ -940,6 +936,7 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// ```
     #[inline]
     #[cfg(feature = "shrink_to")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "shrink_to")))]
     pub fn shrink_to(&mut self, min_capacity: usize) {
         self.data.shrink_to(min_capacity)
     }
@@ -1263,7 +1260,7 @@ impl<T: Ord, D: Arity> ExactSizeIterator for IntoIterSorted<T, D> {}
 impl<T: Ord, D: Arity> FusedIterator for IntoIterSorted<T, D> {}
 
 #[cfg(all(feature = "into_iter_sorted", feature = "trusted_len"))]
-unsafe impl<T: Ord, D: Arity> TrustedLen for IntoIterSorted<T, D> {}
+unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for IntoIterSorted<T, D> {}
 
 /// A draining iterator over the elements of a `DaryHeap`.
 ///
@@ -1324,6 +1321,8 @@ pub struct DrainSorted<'a, T: Ord, D: Arity> {
 impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
     /// Removes heap elements in heap order.
     fn drop(&mut self) {
+        use core::mem::forget;
+
         struct DropGuard<'r, 'a, T: Ord, D: Arity>(&'r mut DrainSorted<'a, T, D>);
 
         impl<'r, 'a, T: Ord, D: Arity> Drop for DropGuard<'r, 'a, T, D> {
@@ -1335,7 +1334,7 @@ impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
         while let Some(item) = self.inner.pop() {
             let guard = DropGuard(self);
             drop(item);
-            mem::forget(guard);
+            forget(guard);
         }
     }
 }
@@ -1363,7 +1362,7 @@ impl<T: Ord, D: Arity> ExactSizeIterator for DrainSorted<'_, T, D> {}
 impl<T: Ord, D: Arity> FusedIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(all(feature = "drain_sorted", feature = "trusted_len"))]
-unsafe impl<T: Ord, D: Arity> TrustedLen for DrainSorted<'_, T, D> {}
+unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for DrainSorted<'_, T, D> {}
 
 impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
     /// Converts a `Vec<T>` into a `DaryHeap<T, D>`.
