@@ -6,6 +6,75 @@
 //! converted to a sorted vector in-place, allowing it to be used for an `O(n * log(n))`
 //! in-place heapsort.
 //!
+//! # Comparison to standard library
+//!
+//! The standard library contains a 2-ary heap
+//! ([`std::collections::BinaryHeap`][std]). The [`BinaryHeap`] of this crate
+//! aims to be a drop-in replacement, both in API and in performance. Cargo
+//! features are used in place of unstable Rust features. The advantage of this
+//! crate over the standard library lies in the possibility of easily changing
+//! the arity of the heap, which can increase performance.
+//!
+//! [std]: https://doc.rust-lang.org/std/collections/struct.BinaryHeap.html
+//!
+//! # Comparison of different arities *d*
+//!
+//! The arity *d* is defined as the maximum number of children each node can
+//! have. A higher number means the heap has less layers, but may require more
+//! work per layer because there are more children present. This generally makes
+//! methods adding elements to the heap such as [`push`] faster, and methods
+//! removing them such as [`pop`] slower. However, due to higher cache locality
+//! for higher *d*, the drop in [`pop`] performance is often less than the
+//! increase in [`push`] performance if *d* > 2 but not too high. If you're
+//! unsure what value of *d* to choose, the [`QuaternaryHeap`] with *d* = 4 is
+//! usually a good start, but benchmarking is necessary to determine the best
+//! value of *d*.
+//!
+//! [`push`]: struct.DaryHeap.html#method.push
+//! [`pop`]: struct.DaryHeap.html#method.pop
+//!
+//! # Usage
+//!
+//! Rust type interference cannot infer the desired heap arity (value of *d*)
+//! automatically when using [`DaryHeap`] directly. It is therefore more
+//! ergonomic to  use one of the type aliases to select the desired arity:
+//!
+//! | [`BinaryHeap`] | [`TernaryHeap`] | [`QuaternaryHeap`] | [`OctonaryHeap`] |
+//! |----------------|-----------------|--------------------|------------------|
+//! | *d* = 2        | *d* = 3         | *d* = 4            | *d* = 8          |
+//!
+//! The difference in ergonomics illustrated in the following:
+//!
+//! ```
+//! use dary_heap::{DaryHeap, D3, TernaryHeap};
+//!
+//! // Type parameter T can be inferred, but arity cannot
+//! let mut heap1 = DaryHeap::<_, D3>::new();
+//! heap1.push(42);
+//!
+//! // Type alias removes need for explicit type
+//! let mut heap2 = TernaryHeap::new();
+//! heap2.push(42);
+//! ```
+//!
+//! If a different arity is desired, you can use the [`arity`] macro or
+//! implement the  necessary trait [`Arity`] yourself.
+//!
+//! ```
+//! use dary_heap::{arity, DaryHeap};
+//!
+//! arity!(D5, 5);
+//! type QuinaryHeap<T> = DaryHeap<T, D5>;
+//! ```
+//!
+//! [`DaryHeap`]: struct.DaryHeap.html
+//! [`BinaryHeap`]: type.BinaryHeap.html
+//! [`TernaryHeap`]: type.TernaryHeap.html
+//! [`QuaternaryHeap`]: type.QuaternaryHeap.html
+//! [`OctonaryHeap`]: type.OctonaryHeap.html
+//! [`arity`]: macro.arity.html
+//! [`Arity`]: trait.Arity.html
+//!
 //! # Examples
 //!
 //! This is a larger example that implements [Dijkstra's algorithm][dijkstra]
@@ -225,6 +294,24 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// item's ordering relative to any other item, as determined by the `Ord`
 /// trait, changes while it is in the heap. This is normally only possible
 /// through `Cell`, `RefCell`, global state, I/O, or unsafe code.
+///
+/// # Usage
+///
+/// Rust type interference cannot infer the desired heap arity (value of *d*)
+/// automatically. Therefore, it is generally more ergonomic to use one of the
+/// [type aliases] instead of `DaryHeap` directly. See the [crate-level
+/// documentation][usage] for more information.
+///
+/// [type aliases]: index.html#types
+/// [usage]: index.html#usage
+///
+/// # Comparison to standard library
+///
+/// For a comparison with [`std::collections::BinaryHeap`][std], see the [crate-level
+/// documentation][comparison].
+///
+/// [std]: https://doc.rust-lang.org/std/collections/struct.BinaryHeap.html
+/// [comparison]: index.html#comparison-to-standard-library
 ///
 /// # Examples
 ///
@@ -470,7 +557,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         }
     }
 
-    /// Removes the greatest item from the *d*-nary heap and returns it, or `None` if it
+    /// Removes the greatest item from the *d*-ary heap and returns it, or `None` if it
     /// is empty.
     ///
     /// # Examples
@@ -499,7 +586,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         })
     }
 
-    /// Pushes an item onto the *d*-nary heap.
+    /// Pushes an item onto the *d*-ary heap.
     ///
     /// # Examples
     ///
