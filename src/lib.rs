@@ -39,9 +39,15 @@
 //! automatically when using [`DaryHeap`] directly. It is therefore more
 //! ergonomic to  use one of the type aliases to select the desired arity:
 //!
-//! | [`BinaryHeap`] | [`TernaryHeap`] | [`QuaternaryHeap`] | [`OctonaryHeap`] |
-//! |----------------|-----------------|--------------------|------------------|
-//! | *d* = 2        | *d* = 3         | *d* = 4            | *d* = 8          |
+//! | Name               | Arity   |
+//! |--------------------|---------|
+//! | [`BinaryHeap`]     | *d* = 2 |
+//! | [`TernaryHeap`]    | *d* = 3 |
+//! | [`QuaternaryHeap`] | *d* = 4 |
+//! | [`QuinaryHeap`]    | *d* = 5 |
+//! | [`SenaryHeap`]     | *d* = 6 |
+//! | [`SeptenaryHeap`]  | *d* = 7 |
+//! | [`OctonaryHeap`]   | *d* = 8 |
 //!
 //! The difference in ergonomics illustrated in the following:
 //!
@@ -58,19 +64,23 @@
 //! ```
 //!
 //! If a different arity is desired, you can use the [`arity`] macro or
-//! implement the  necessary trait [`Arity`] yourself.
+//! implement the  necessary trait [`Arity`] yourself. It should be noted that
+//! *d* > 8 is rarely beneficial.
 //!
 //! ```
 //! use dary_heap::{arity, DaryHeap};
 //!
-//! arity! { pub(crate) D5 = 5; }
-//! pub(crate) type QuinaryHeap<T> = DaryHeap<T, D5>;
+//! arity! { pub(crate) D9 = 9; }
+//! pub(crate) type NovenaryHeap<T> = DaryHeap<T, D9>;
 //! ```
 //!
 //! [`DaryHeap`]: struct.DaryHeap.html
 //! [`BinaryHeap`]: type.BinaryHeap.html
 //! [`TernaryHeap`]: type.TernaryHeap.html
 //! [`QuaternaryHeap`]: type.QuaternaryHeap.html
+//! [`QuinaryHeap`]: type.QuinaryHeap.html
+//! [`SenaryHeap`]: type.SenaryHeap.html
+//! [`SeptenaryHeap`]: type.SeptenaryHeap.html
 //! [`OctonaryHeap`]: type.OctonaryHeap.html
 //! [`arity`]: macro.arity.html
 //! [`Arity`]: trait.Arity.html
@@ -254,20 +264,21 @@ pub trait Arity {
 /// ```
 ///
 /// # Examples
+///
 /// ```
 /// use dary_heap::{arity, DaryHeap};
 ///
-/// arity! { pub D5 = 5; }
-/// pub type QuinaryHeap<T> = DaryHeap<T, D5>;
+/// arity! { pub D9 = 9; }
+/// pub type NovenaryHeap<T> = DaryHeap<T, D9>;
 ///
 /// arity! {
-///     /// For a senary heap
-///     D6 = 6;
-///     /// For a septenary heap
-///     pub(crate) D7 = 7;
+///     /// For a denary heap
+///     D10 = 10;
+///     /// For an undenary heap
+///     pub(crate) D11 = 11;
 /// }
-/// type SenaryHeap<T> = DaryHeap<T, D6>;
-/// pub(crate) type SeptenaryHeap<T> = DaryHeap<T, D7>;
+/// type DenaryHeap<T> = DaryHeap<T, D10>;
+/// pub(crate) type UndenaryHeap<T> = DaryHeap<T, D11>;
 /// ```
 ///
 /// [`Arity`]: trait.Arity.html
@@ -296,6 +307,15 @@ arity! {
     /// Marker for arity *d* = 4.
     pub D4 = 4;
 
+    /// Marker for arity *d* = 5.
+    pub D5 = 5;
+
+    /// Marker for arity *d* = 6.
+    pub D6 = 6;
+
+    /// Marker for arity *d* = 7.
+    pub D7 = 7;
+
     /// Marker for arity *d* = 8.
     pub D8 = 8;
 }
@@ -308,6 +328,15 @@ pub type TernaryHeap<T> = DaryHeap<T, D3>;
 
 /// A quaternary heap (*d* = 4).
 pub type QuaternaryHeap<T> = DaryHeap<T, D4>;
+
+/// A quinary heap (*d* = 5).
+pub type QuinaryHeap<T> = DaryHeap<T, D5>;
+
+/// A senary heap (*d* = 6).
+pub type SenaryHeap<T> = DaryHeap<T, D6>;
+
+/// A septenary heap (*d* = 7).
+pub type SeptenaryHeap<T> = DaryHeap<T, D7>;
 
 /// An octonary heap (*d* = 8).
 pub type OctonaryHeap<T> = DaryHeap<T, D8>;
@@ -1643,6 +1672,21 @@ mod tests {
     #[test]
     fn pop_d4() {
         pop::<D4>();
+    }
+
+    #[test]
+    fn pop_d5() {
+        pop::<D5>();
+    }
+
+    #[test]
+    fn pop_d6() {
+        pop::<D6>();
+    }
+
+    #[test]
+    fn pop_d7() {
+        pop::<D7>();
     }
 
     #[test]

@@ -1,5 +1,5 @@
 use criterion::*;
-use dary_heap::{Arity, DaryHeap, D2, D3, D4, D8};
+use dary_heap::{Arity, DaryHeap, D2, D3, D4, D5, D6, D7, D8};
 use rand::{seq::SliceRandom, thread_rng};
 use std::collections::BinaryHeap;
 use std::convert::identity;
@@ -71,6 +71,15 @@ macro_rules! heap_bench {
                 group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
                     b.iter_batched(|| $data(random_data(i)), $dary_fn::<D4>, size)
                 });
+                group.bench_function(BenchmarkId::new("DaryHeap<D5>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D5>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D6>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D6>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D7>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D7>, size)
+                });
                 group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
                     b.iter_batched(|| $data(random_data(i)), $dary_fn::<D8>, size)
                 });
@@ -117,6 +126,15 @@ fn append(c: &mut Criterion) {
         });
         group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
             b.iter_batched(|| data(random_data(base), i), dary_fn::<D4>, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D5>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D5>, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D6>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D6>, size)
+        });
+        group.bench_function(BenchmarkId::new("DaryHeap<D7>", i), |b| {
+            b.iter_batched(|| data(random_data(base), i), dary_fn::<D7>, size)
         });
         group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
             b.iter_batched(|| data(random_data(base), i), dary_fn::<D8>, size)
