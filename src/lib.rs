@@ -63,8 +63,8 @@
 //! ```
 //! use dary_heap::{arity, DaryHeap};
 //!
-//! arity!(D5, 5);
-//! type QuinaryHeap<T> = DaryHeap<T, D5>;
+//! arity! { pub(crate) D5 = 5; }
+//! pub(crate) type QuinaryHeap<T> = DaryHeap<T, D5>;
 //! ```
 //!
 //! [`DaryHeap`]: struct.DaryHeap.html
@@ -238,41 +238,67 @@ pub trait Arity {
 
 /// Convenience macro to implement `Arity` for a specific number.
 ///
-/// This macro implements [`Arity`] for a public unconstructable enum and adds
-/// documentation. The first argument is the name of the enum, the second the
-/// number *d*, and the optional third argument is a documentation string.
+/// This macro implements [`Arity`] for an unconstructable enum. It is a
+/// shorthand such that `A` and `B` are equivalent in the following:
+///
+/// ```
+/// use dary_heap::{arity, Arity};
+///
+/// arity! { pub A = 3; }
+///
+/// pub enum B {}
+///
+/// impl Arity for B {
+///     const D: usize = 3;
+/// }
+/// ```
 ///
 /// # Examples
 /// ```
 /// use dary_heap::{arity, DaryHeap};
 ///
-/// arity!(D5, 5);
-/// type QuinaryHeap<T> = DaryHeap<T, D5>;
+/// arity! { pub D5 = 5; }
+/// pub type QuinaryHeap<T> = DaryHeap<T, D5>;
 ///
-/// arity!(D6, 6, "Use for senary heap");
+/// arity! {
+///     /// For a senary heap
+///     D6 = 6;
+///     /// For a septenary heap
+///     pub(crate) D7 = 7;
+/// }
 /// type SenaryHeap<T> = DaryHeap<T, D6>;
+/// pub(crate) type SeptenaryHeap<T> = DaryHeap<T, D7>;
 /// ```
 ///
 /// [`Arity`]: trait.Arity.html
 #[macro_export]
 macro_rules! arity {
-    ($arity:ident, $num:expr) => {
-        arity!($arity, $num, concat!("Marker for arity *d* = ", stringify!($num), "."));
-    };
-    ($arity:ident, $num:expr, $doc:expr) => {
-        #[doc = $doc]
-        pub enum $arity {}
+    ($(#[$attr:meta])* $vis:vis $arity:ident = $num:expr; $($t:tt)*) => {
+        $(#[$attr])*
+        $vis enum $arity {}
 
         impl $crate::Arity for $arity {
             const D: usize = $num;
         }
+
+        $crate::arity!($($t)*);
     };
+    () => {}
 }
 
-arity!(D2, 2);
-arity!(D3, 3);
-arity!(D4, 4);
-arity!(D8, 8);
+arity! {
+    /// Marker for arity *d* = 2.
+    pub D2 = 2;
+
+    /// Marker for arity *d* = 3.
+    pub D3 = 3;
+
+    /// Marker for arity *d* = 4.
+    pub D4 = 4;
+
+    /// Marker for arity *d* = 8.
+    pub D8 = 8;
+}
 
 /// A binary heap (*d* = 2).
 pub type BinaryHeap<T> = DaryHeap<T, D2>;
