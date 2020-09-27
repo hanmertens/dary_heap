@@ -30,6 +30,7 @@ The following features are available on stable compilers:
   but yields elements in heap order.
 - `retain`: add `retain` function that retains only those elements in the heap
   specified by the predicate.
+- `serde`: add support for (de)serialization using [Serde][serde].
 
 The following features require unstable compiler features and are therefore
 limited to nightly compilers:
@@ -53,3 +54,4 @@ at your option.
 
 [wiki]: https://en.wikipedia.org/wiki/D-ary_heap
 [std-binaryheap]: https://doc.rust-lang.org/std/collections/struct.BinaryHeap.html
+[serde]: https://serde.rs
