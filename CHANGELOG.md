@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add support for Serde behind `serde` feature.
 
+### Changed
+- Extra safeguards against constructing and using a nullary heap.
+
 ## [0.1.0] &ndash; 2020-09-26
 ### Added
 - `DaryHeap` based on `std::collections::BinaryHeap`.

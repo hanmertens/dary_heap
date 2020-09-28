@@ -244,6 +244,18 @@ use alloc::{vec, vec::Vec};
 use serde::{Deserialize, Serialize};
 
 /// Marker to specify arity *d* in a *d*-ary heap.
+///
+/// # Validity of arities in *d*-ary heaps
+///
+/// Only arities of two or greater are useful in *d*-ary heap, and are therefore
+/// the only ones implemented by default. Lower arities are only possible if you
+/// put in the effort to implement them yourself. An arity of one is possible,
+/// but yields a heap where every element has one child. This essentially makes
+/// it a sorted vector with poor performance. Regarding an arity of zero: this
+/// is not statically prevented, but constructing a [`DaryHeap`] with it and
+/// using it may (and probably will) result in a runtime panic.
+///
+/// [`DaryHeap`]: struct.DaryHeap.html
 pub trait Arity {
     /// The value of *d*.
     const D: usize;
@@ -292,7 +304,8 @@ macro_rules! arity {
         $vis enum $arity {}
 
         impl $crate::Arity for $arity {
-            const D: usize = $num;
+            #[deny(arithmetic_overflow)]
+            const D: usize = $num - 1 + 1; // Arity should be greater than zero
         }
 
         $crate::arity!($($t)*);
@@ -719,6 +732,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     // Using a hole reduces the constant factor compared to using swaps,
     // which involves twice as many moves.
     fn sift_up(&mut self, start: usize, pos: usize) -> usize {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
         unsafe {
             // Take out the value at `pos` and create a hole.
             let mut hole = Hole::new(&mut self.data, pos);
@@ -737,6 +751,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// Take an element at `pos` and move it down the heap,
     /// while its children are larger.
     fn sift_down_range(&mut self, pos: usize, end: usize) {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
             let mut child = D::D * pos + 1;
@@ -768,6 +783,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// Note: This is faster when the element is known to be large / should
     /// be closer to the bottom.
     fn sift_down_to_bottom(&mut self, mut pos: usize) {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
         let end = self.len();
         let start = pos;
         unsafe {
@@ -789,6 +805,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     }
 
     fn rebuild(&mut self) {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
         if self.len() < 2 {
             return;
         }
@@ -841,6 +858,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         // assuming len1 >= len2.
         #[inline]
         fn better_to_rebuild<D: Arity>(len1: usize, len2: usize) -> bool {
+            assert_ne!(D::D, 0, "Arity should be greater than zero");
             let logd_len1 = log2_fast(len1) / log2_fast(D::D);
             D::D * (len1 + len2) < (D::D - 1) * len2 * logd_len1
         }
@@ -1627,6 +1645,7 @@ impl<T: Ord + fmt::Debug, D: Arity> DaryHeap<T, D> {
     /// Panics if the heap is in an inconsistent state
     #[track_caller]
     pub fn assert_valid_state(&self) {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
         for (i, v) in self.iter().enumerate() {
             let children = D::D * i + 1..D::D * i + D::D;
             if children.start > self.len() {
@@ -1661,6 +1680,31 @@ mod tests {
             }
             assert_eq!(heap.pop(), None);
         }
+    }
+
+    enum D0 {}
+
+    impl Arity for D0 {
+        const D: usize = 0;
+    }
+
+    #[test]
+    #[should_panic]
+    fn push_d0() {
+        let mut heap = DaryHeap::<_, D0>::new();
+        heap.push(42);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_vec_d0() {
+        let _heap = DaryHeap::<_, D0>::from(vec![42]);
+    }
+
+    #[test]
+    fn pop_d1() {
+        arity! { D1 = 1; }
+        pop::<D1>();
     }
 
     #[test]
