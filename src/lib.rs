@@ -24,8 +24,7 @@
 //! work per layer because there are more children present. This generally makes
 //! methods adding elements to the heap such as [`push`] faster, and methods
 //! removing them such as [`pop`] slower. However, due to higher cache locality
-//! for higher *d*, the drop in [`pop`] performance is often less than the
-//! increase in [`push`] performance if *d* > 2 but not too high. If you're
+//! for higher *d*, the drop in [`pop`] performance is often diminished. If you're
 //! unsure what value of *d* to choose, the [`QuaternaryHeap`] with *d* = 4 is
 //! usually a good start, but benchmarking is necessary to determine the best
 //! value of *d*.
@@ -296,7 +295,21 @@ pub trait Arity {
 /// pub(crate) type UndenaryHeap<T> = DaryHeap<T, D11>;
 /// ```
 ///
+/// This macro protects against setting the arity to zero as [`DaryHeap`] cannot
+/// be used with such an arity. See [the relevant section of the `Arity`
+/// trait][validity] for more information.
+///
+/// ```compile_fail
+/// use dary_heap::{arity, DaryHeap};
+///
+/// arity! { D0 = 0; }
+///
+/// let heap = DaryHeap::<_, D0>::from(vec![42]);
+/// ```
+///
 /// [`Arity`]: trait.Arity.html
+/// [`DaryHeap`]: struct.DaryHeap.html
+/// [validity]: trait.Arity.html#validity-of-arities-in-d-ary-heaps
 #[macro_export]
 macro_rules! arity {
     ($(#[$attr:meta])* $vis:vis $arity:ident = $num:expr; $($t:tt)*) => {

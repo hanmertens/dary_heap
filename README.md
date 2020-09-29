@@ -1,25 +1,27 @@
 # dary_heap
 
 [![CI](https://github.com/hanmertens/dary_heap/workflows/CI/badge.svg)](https://github.com/hanmertens/dary_heap/actions?query=workflow%3ACI)
+[![Crates.io](https://img.shields.io/crates/v/dary_heap.svg)](https://crates.io/crates/dary_heap)
+[![Docs.rs](https://docs.rs/dary_heap/badge.svg)](https://docs.rs/dary_heap)
 
 Rust implementation of a [*d*-ary heap][wiki]. The *d* = 2 version is present in
 the standard library as [`BinaryHeap`][std-binaryheap], but using a higher value
 for *d* can bring performance improvements in many use cases. This is because a
-higher arity *d* (maximum number of children each node can have) means less
-layers, but potentially more work per layer because there are more children.
-This generally makes adding elements to the heap faster, but removing elements
-slower. However, the latter effect is often less due to higher cache locality.
-Therefore, overall performance is often increased if *d* > 2 but not too high.
-If you're unsure what value of *d* to choose, the `QuaternaryHeap` with *d* = 4
-is usually a good start, but benchmarking is necessary to determine the best
-value of *d*.
+higher arity *d* (maximum number of children each node can have) means the heap
+contains less layers, making adding elements to the heap faster. However,
+removing elements is slower, because then the amount of work per layer is higher
+as there are more children. The latter effect is often diminished due to higher
+cache locality. Therefore, overall performance is often increased if *d* > 2 but
+not too high. Benchmarking is necessary to determine the best value of *d* for a
+specific use case.
 
 The API of this crate aims to be analogous to that of [`BinaryHeap` in the
 standard library][std-binaryheap]. Feature-gated API in the standard library is
 also feature-gated in `dary_heap`, see [the section on features](#features) for
 more information. In fact, the code in `dary_heap` is directly based on that of
 the standard library. The `BinaryHeap` provided by this crate should therefore
-provide similar performance as that of the standard library.
+provide similar performance as that of the standard library, and the other heap
+types provided by this crate may provide performance improvements.
 
 ## Features
 
