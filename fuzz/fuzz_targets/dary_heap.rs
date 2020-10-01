@@ -1,5 +1,5 @@
 #![no_main]
-use dary_heap::{Arity, DaryHeap, D2, D3, D4, D5, D6, D7, D8};
+use dary_heap::{arity, Arity, DaryHeap, D2, D3, D4, D5, D6, D7, D8};
 use libfuzzer_sys::fuzz_target;
 
 fn to_u16_slice(data: &[u8]) -> &[u16] {
@@ -87,15 +87,18 @@ macro_rules! fuzz_match {
     };
 }
 
+arity! { D1 = 1; }
+
 fuzz_target!(|data: &[u8]| {
     if let Some((first, data)) = data.split_first() {
         let data = to_u16_slice(data);
-        fuzz_match!(first, 0, D2, data);
-        fuzz_match!(first, 32, D3, data);
-        fuzz_match!(first, 64, D4, data);
-        fuzz_match!(first, 96, D5, data);
-        fuzz_match!(first, 128, D6, data);
-        fuzz_match!(first, 160, D7, data);
-        fuzz_match!(first, 192, D8, data);
+        fuzz_match!(first, 0, D1, data);
+        fuzz_match!(first, 32, D2, data);
+        fuzz_match!(first, 64, D3, data);
+        fuzz_match!(first, 96, D4, data);
+        fuzz_match!(first, 128, D5, data);
+        fuzz_match!(first, 160, D6, data);
+        fuzz_match!(first, 192, D7, data);
+        fuzz_match!(first, 224, D8, data);
     }
 });
