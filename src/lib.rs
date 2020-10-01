@@ -872,7 +872,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         #[inline]
         fn better_to_rebuild<D: Arity>(len1: usize, len2: usize) -> bool {
             assert_ne!(D::D, 0, "Arity should be greater than zero");
-            let logd_len1 = log2_fast(len1) / log2_fast(D::D);
+            let logd_len1 = log2_fast(len1) / if D::D > 1 { log2_fast(D::D) } else { 1 };
             D::D * (len1 + len2) < (D::D - 1) * len2 * logd_len1
         }
 
