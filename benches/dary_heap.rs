@@ -6,7 +6,7 @@ use std::convert::identity;
 use std::iter::FromIterator;
 
 /// Data type we want to use
-type T = u16;
+type T = u32;
 
 /// Produce shuffled vector containing values 0..n
 fn random_data(n: T) -> Vec<T> {
@@ -57,7 +57,7 @@ macro_rules! heap_bench {
             let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
             let mut group = c.benchmark_group(stringify!($name));
             group.plot_config(plot_config);
-            for &i in &[10, 100, 1000, 10000] {
+            for &i in &[10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000] {
                 let size = BatchSize::SmallInput;
                 group.bench_function(BenchmarkId::new("BinaryHeap", i), |b| {
                     b.iter_batched(|| $data(random_data(i)), $std_fn, size)
@@ -92,55 +92,83 @@ heap_bench!(make_heap, make_std_heap, make_dary_heap);
 heap_bench!(pop, std_heap_pop, dary_heap_pop, Vec::into);
 heap_bench!(push, std_heap_push, dary_heap_push, push_data);
 
-fn append(c: &mut Criterion) {
-    fn data<H: From<Vec<T>>>(mut vec1: Vec<T>, i: usize) -> (H, H) {
-        let vec2 = vec1.split_off(i);
-        (vec1.into(), vec2.into())
-    }
-
-    fn std_fn((mut heap1, mut heap2): (BinaryHeap<T>, BinaryHeap<T>)) -> BinaryHeap<T> {
-        heap1.append(&mut heap2);
-        heap1
-    }
-
-    fn dary_fn<D: Arity>(
-        (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
-    ) -> DaryHeap<T, D> {
-        heap1.append(&mut heap2);
-        heap1
-    }
-
-    let mut group = c.benchmark_group("append");
-    let base = 1000;
-    let step = 25;
-    for i in (step..=base as usize / 2).step_by(step) {
-        let size = BatchSize::SmallInput;
-        group.bench_function(BenchmarkId::new("BinaryHeap", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), std_fn, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D2>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D2>, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D3>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D3>, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D4>, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D5>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D5>, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D6>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D6>, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D7>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D7>, size)
-        });
-        group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
-            b.iter_batched(|| data(random_data(base), i), dary_fn::<D8>, size)
-        });
-    }
+fn two_heaps<H: From<Vec<T>>>(mut vec1: Vec<T>, i: usize) -> (H, H) {
+    let vec2 = vec1.split_off(i);
+    (vec1.into(), vec2.into())
 }
 
-criterion_group!(benches, make_heap, pop, push, append);
+fn std_heap_append((mut heap1, mut heap2): (BinaryHeap<T>, BinaryHeap<T>)) -> BinaryHeap<T> {
+    heap1.append(&mut heap2);
+    heap1
+}
+
+fn dary_heap_append<D: Arity>(
+    (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
+) -> DaryHeap<T, D> {
+    heap1.append(&mut heap2);
+    heap1
+}
+
+fn std_heap_extend((mut heap1, mut heap2): (BinaryHeap<T>, BinaryHeap<T>)) -> BinaryHeap<T> {
+    if heap1.len() < heap2.len() {
+        core::mem::swap(&mut heap1, &mut heap2);
+    }
+    heap1.extend(heap2.drain());
+    heap1
+}
+
+fn dary_heap_extend<D: Arity>(
+    (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
+) -> DaryHeap<T, D> {
+    if heap1.len() < heap2.len() {
+        core::mem::swap(&mut heap1, &mut heap2);
+    }
+    heap1.extend(heap2.drain());
+    heap1
+}
+
+macro_rules! heap_bench_merge {
+    ($name:ident, $std_fn:ident, $dary_fn:ident $(,)?) => {
+        heap_bench_merge!($name, $std_fn, $dary_fn, two_heaps);
+    };
+    ($name:ident, $std_fn:ident, $dary_fn:ident, $data:expr $(,)?) => {
+        fn $name(c: &mut Criterion) {
+            let mut group = c.benchmark_group(stringify!($name));
+            let base = 100000;
+            let step = 2500;
+            for i in (step..=base as usize / 2).step_by(step) {
+                let size = BatchSize::SmallInput;
+                group.bench_function(BenchmarkId::new("BinaryHeap", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $std_fn, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D2>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D2>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D3>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D3>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D4>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D5>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D5>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D6>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D6>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D7>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D7>, size)
+                });
+                group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D8>, size)
+                });
+            }
+        }
+    };
+}
+
+heap_bench_merge!(append, std_heap_append, dary_heap_append);
+heap_bench_merge!(extend, std_heap_extend, dary_heap_extend);
+
+criterion_group!(benches, make_heap, pop, push, append, extend);
 criterion_main!(benches);
