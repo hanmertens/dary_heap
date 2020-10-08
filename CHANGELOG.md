@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   compilers (previously `drain_sorted`, `into_iter_sorted`, and `retain`) and
   `unstable_nightly` for everything only available on nightly (previously
   `exact_size_is_empty`, `extend_one`, `shrink_to`, and `trusted_len`).
+- Synchronize source code with standard library of Rust version 1.47.0.
 
 ### Fixed
 - Fix division by zero for unary heap in `append`.

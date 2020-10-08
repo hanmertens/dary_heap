@@ -1,9 +1,9 @@
 //! A priority queue implemented with a *d*-ary heap.
 //!
-//! Insertion and popping the largest element have `O(log(n))` time complexity.
-//! Checking the largest element is `O(1)`. Converting a vector to a *d*-ary heap
-//! can be done in-place, and has `O(n)` complexity. A *d*-ary heap can also be
-//! converted to a sorted vector in-place, allowing it to be used for an `O(n * log(n))`
+//! Insertion and popping the largest element have *O*(log(*n*)) time complexity.
+//! Checking the largest element is *O*(1). Converting a vector to a *d*-ary heap
+//! can be done in-place, and has *O*(*n*) complexity. A *d*-ary heap can also be
+//! converted to a sorted vector in-place, allowing it to be used for an *O*(*n* \* log(*n*))
 //! in-place heapsort.
 //!
 //! # Comparison to standard library
@@ -90,9 +90,9 @@
 //! to solve the [shortest path problem][sssp] on a [directed graph][dir_graph].
 //! It shows how to use [`DaryHeap`] with custom types.
 //!
-//! [dijkstra]: http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
-//! [sssp]: http://en.wikipedia.org/wiki/Shortest_path_problem
-//! [dir_graph]: http://en.wikipedia.org/wiki/Directed_graph
+//! [dijkstra]: https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+//! [sssp]: https://en.wikipedia.org/wiki/Shortest_path_problem
+//! [dir_graph]: https://en.wikipedia.org/wiki/Directed_graph
 //! [`DaryHeap`]: struct.DaryHeap.html
 //!
 //! ```
@@ -465,7 +465,7 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 ///
 /// | [push] | [pop]     | [peek]/[peek\_mut] |
 /// |--------|-----------|--------------------|
-/// | O(1)~  | O(log(n)) | O(1)               |
+/// | O(1)~  | *O*(log(*n*)) | *O*(1)               |
 ///
 /// The value for `push` is an expected cost; the method documentation gives a
 /// more detailed analysis.
@@ -627,7 +627,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     ///
     /// # Time complexity
     ///
-    /// Cost is `O(1)` in the worst case.
+    /// Cost is *O*(1) in the worst case.
     pub fn peek_mut(&mut self) -> Option<PeekMut<'_, T, D>> {
         if self.is_empty() {
             None
@@ -657,7 +657,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     ///
     /// # Time complexity
     ///
-    /// The worst case cost of `pop` on a heap containing *n* elements is `O(log(n))`.
+    /// The worst case cost of `pop` on a heap containing *n* elements is *O*(log(*n*)).
     pub fn pop(&mut self) -> Option<T> {
         self.data.pop().map(|mut item| {
             if !self.is_empty() {
@@ -689,15 +689,15 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     ///
     /// The expected cost of `push`, averaged over every possible ordering of
     /// the elements being pushed, and over a sufficiently large number of
-    /// pushes, is `O(1)`. This is the most meaningful cost metric when pushing
+    /// pushes, is *O*(1). This is the most meaningful cost metric when pushing
     /// elements that are *not* already in any sorted pattern.
     ///
     /// The time complexity degrades if elements are pushed in predominantly
     /// ascending order. In the worst case, elements are pushed in ascending
-    /// sorted order and the amortized cost per push is `O(log(n))` against a heap
+    /// sorted order and the amortized cost per push is *O*(log(*n*)) against a heap
     /// containing *n* elements.
     ///
-    /// The worst case cost of a *single* call to `push` is `O(n)`. The worst case
+    /// The worst case cost of a *single* call to `push` is *O*(*n*). The worst case
     /// occurs when capacity is exhausted and needs a resize. The resize cost
     /// has been amortized in the previous figures.
     pub fn push(&mut self, item: T) {
@@ -886,7 +886,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// The remaining elements will be removed on drop in heap order.
     ///
     /// Note:
-    /// * `.drain_sorted()` is `O(n * log(n))`; much slower than `.drain()`.
+    /// * `.drain_sorted()` is *O*(*n* \* log(*n*)); much slower than `.drain()`.
     ///   You should use the latter for most cases.
     ///
     /// # Examples
@@ -1000,7 +1000,7 @@ impl<T, D: Arity> DaryHeap<T, D> {
     ///
     /// # Time complexity
     ///
-    /// Cost is `O(1)` in the worst case.
+    /// Cost is *O*(1) in the worst case.
     pub fn peek(&self) -> Option<&T> {
         self.data.get(0)
     }
@@ -1541,7 +1541,7 @@ unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for DrainSorted<'_, T, D> {
 impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
     /// Converts a `Vec<T>` into a `DaryHeap<T, D>`.
     ///
-    /// This conversion happens in-place, and has `O(n)` time complexity.
+    /// This conversion happens in-place, and has *O*(*n*) time complexity.
     fn from(vec: Vec<T>) -> DaryHeap<T, D> {
         let mut heap = DaryHeap {
             data: vec,
