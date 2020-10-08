@@ -3,11 +3,11 @@ name = "dary_heap"
 version = "0.1.0"
 authors = ["Han Mertens <hanmertens@outlook.com>"]
 edition = "2018"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "A d-ary heap"
 repository = "https://github.com/hanmertens/dary_heap"
 readme = "README.md"
-keywords = ["heap", "priority-queue"]
+keywords = ["heap", "priority-queue", "no_std"]
 categories = ["data-structures"]
 
 [package.metadata.docs.rs]
