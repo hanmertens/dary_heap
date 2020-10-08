@@ -12,8 +12,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [stable, beta, nightly, macos, windows]
+        build: [msrv, stable, beta, nightly, macos, windows]
         include:
+          - build: msrv
+            os: ubuntu-latest
+            rust: 1.41.0
           - build: stable
             os: ubuntu-latest
             rust: stable
@@ -41,10 +44,12 @@ jobs:
     - name: Build
       run: cargo build
     - name: Test
+      if: matrix.build != 'msrv'
       run: cargo test
     - name: Build with stable features
       run: cargo build --features "serde unstable"
     - name: Test with stable features
+      if: matrix.build != 'msrv'
       run: cargo test --features "serde unstable"
     - name: Build with stable and nightly features
       if: matrix.rust == 'nightly'

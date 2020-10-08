@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Add support for Serde behind `serde` feature.
+- Establish stability guidelines and set MSRV at 1.41.0.
 
 ### Changed
 - Extra safeguards against constructing and using a nullary heap.
