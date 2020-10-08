@@ -1,5 +1,7 @@
-#![cfg_attr(feature = "trusted_len", feature(trusted_len))]
-#![cfg_attr(feature = "exact_size_is_empty", feature(exact_size_is_empty))]
+#![cfg_attr(
+    feature = "unstable_nightly",
+    feature(exact_size_is_empty, trusted_len)
+)]
 
 use dary_heap::{BinaryHeap, Drain, PeekMut};
 
@@ -63,7 +65,7 @@ fn test_into_iter_rev_collect() {
 }
 
 #[test]
-#[cfg(feature = "into_iter_sorted")]
+#[cfg(feature = "unstable")]
 fn test_into_iter_sorted_collect() {
     let heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     let it = heap.into_iter_sorted();
@@ -72,7 +74,7 @@ fn test_into_iter_sorted_collect() {
 }
 
 #[test]
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 fn test_drain_sorted_collect() {
     let mut heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     let it = heap.drain_sorted();
@@ -91,7 +93,7 @@ fn check_exact_size_iterator<I: ExactSizeIterator>(len: usize, it: I) {
         it.next();
     }
     assert_eq!(it.len(), 0);
-    #[cfg(feature = "exact_size_is_empty")]
+    #[cfg(feature = "unstable_nightly")]
     assert!(it.is_empty());
 }
 
@@ -100,14 +102,14 @@ fn test_exact_size_iterator() {
     let heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     check_exact_size_iterator(heap.len(), heap.iter());
     check_exact_size_iterator(heap.len(), heap.clone().into_iter());
-    #[cfg(feature = "into_iter_sorted")]
+    #[cfg(feature = "unstable")]
     check_exact_size_iterator(heap.len(), heap.clone().into_iter_sorted());
     check_exact_size_iterator(heap.len(), heap.clone().drain());
-    #[cfg(feature = "drain_sorted")]
+    #[cfg(feature = "unstable")]
     check_exact_size_iterator(heap.len(), heap.clone().drain_sorted());
 }
 
-#[cfg(feature = "trusted_len")]
+#[cfg(feature = "unstable_nightly")]
 fn check_trusted_len<I: std::iter::TrustedLen>(len: usize, it: I) {
     let mut it = it;
     for i in 0..len {
@@ -121,13 +123,13 @@ fn check_trusted_len<I: std::iter::TrustedLen>(len: usize, it: I) {
 }
 
 #[test]
-#[cfg(feature = "trusted_len")]
+#[cfg(feature = "unstable_nightly")]
 fn test_trusted_len() {
     let heap = BinaryHeap::from(vec![2, 4, 6, 2, 1, 8, 10, 3, 5, 7, 0, 9, 1]);
     check_trusted_len(heap.len(), heap.clone().into_vec().into_iter());
-    #[cfg(feature = "into_iter_sorted")]
+    #[cfg(feature = "unstable")]
     check_trusted_len(heap.len(), heap.clone().into_iter_sorted());
-    #[cfg(feature = "drain_sorted")]
+    #[cfg(feature = "unstable")]
     check_trusted_len(heap.len(), heap.clone().drain_sorted());
 }
 
@@ -278,7 +280,7 @@ fn test_drain() {
 }
 
 #[test]
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 fn test_drain_sorted() {
     let mut q: BinaryHeap<_> = [9, 8, 7, 6, 5, 4, 3, 2, 1].iter().cloned().collect();
 
@@ -291,7 +293,7 @@ fn test_drain_sorted() {
 }
 
 #[test]
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 fn test_drain_sorted_leak() {
     use std::panic::{catch_unwind, AssertUnwindSafe};
     use std::sync::atomic::{AtomicU32, Ordering};
@@ -390,7 +392,7 @@ fn assert_covariance() {
 }
 
 #[test]
-#[cfg(feature = "retain")]
+#[cfg(feature = "unstable")]
 fn test_retain() {
     let mut a = BinaryHeap::from(vec![-10, -5, 1, 2, 4, 13]);
     a.retain(|x| x % 2 == 0);

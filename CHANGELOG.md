@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Extra safeguards against constructing and using a nullary heap.
+- Simpler unstable Cargo features: `unstable` for everything available on stable
+  compilers (previously `drain_sorted`, `into_iter_sorted`, and `retain`) and
+  `unstable_nightly` for everything only available on nightly (previously
+  `exact_size_is_empty`, `extend_one`, `shrink_to`, and `trusted_len`).
 
 ## [0.1.0] &ndash; 2020-09-26
 ### Added

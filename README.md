@@ -25,23 +25,22 @@ types provided by this crate may provide performance improvements.
 
 ## Features
 
-The following features are available on stable compilers:
-- `drain_sorted`: add `drain_sorted` method which is like `drain` but yields
-  elements in heap order.
-- `into_iter_sorted`: add `into_iter_sorted` method which is like `into_iter`
-  but yields elements in heap order.
-- `retain`: add `retain` function that retains only those elements in the heap
-  specified by the predicate.
 - `serde`: add support for (de)serialization using [Serde][serde].
-
-The following features require unstable compiler features and are therefore
-limited to nightly compilers:
-- `exact_size_is_empty`: implement methods defined by unstable feature
-  `exact_size_is_empty` on `ExactSizeIterator`s in this crate.
-- `extend_one`: implement methods defined by unstable feature `extend_one`.
-- `shrink_to`: add `shrink_to` method to shrink heap capacity to a lower bound.
-- `trusted_len`: implement `TrustedLen` for iterators if possible. Only has an
-  effect when `drain_sorted` or `into_iter_sorted` is also enabled.
+- `unstable`: enable support for experimental (unstable) features:
+  - add `drain_sorted` method which is like `drain` but yields elements in heap
+    order.
+  - add `into_iter_sorted` method which is like `into_iter` but yields elements
+    in heap order.
+  - add `retain` function that retains only those elements in the heap specified
+    by the predicate.
+- `unstable_nightly`: enable support for experimental (unstable) features that
+  require a nightly Rust compiler:
+  - implement methods defined by unstable feature `exact_size_is_empty` on
+    `ExactSizeIterator`s in this crate.
+  - implement methods defined by unstable feature `extend_one`.
+  - add `shrink_to` method to shrink heap capacity to a lower bound.
+  - implement `TrustedLen` for iterators if possible (only when `unstable` is
+    also enabled).
 
 ## License
 

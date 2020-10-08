@@ -43,9 +43,9 @@ jobs:
     - name: Test
       run: cargo test
     - name: Build with stable features
-      run: cargo build --features "drain_sorted into_iter_sorted retain serde"
+      run: cargo build --features "serde unstable"
     - name: Test with stable features
-      run: cargo test --features "drain_sorted into_iter_sorted retain serde"
+      run: cargo test --features "serde unstable"
     - name: Build with stable and nightly features
       if: matrix.rust == 'nightly'
       run: cargo build --all-features

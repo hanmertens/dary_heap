@@ -15,15 +15,8 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
-# Features requiring nightly
-exact_size_is_empty = []
-extend_one = []
-shrink_to = []
-trusted_len = []
-# Features available on stable
-drain_sorted = []
-into_iter_sorted = []
-retain = []
+unstable = []
+unstable_nightly = []
 
 [dependencies.serde]
 version = "1"

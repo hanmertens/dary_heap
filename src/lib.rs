@@ -220,10 +220,10 @@
 //! ```
 
 #![no_std]
-#![cfg_attr(feature = "exact_size_is_empty", feature(exact_size_is_empty))]
-#![cfg_attr(feature = "extend_one", feature(extend_one))]
-#![cfg_attr(feature = "shrink_to", feature(shrink_to))]
-#![cfg_attr(feature = "trusted_len", feature(trusted_len))]
+#![cfg_attr(
+    feature = "unstable_nightly",
+    feature(exact_size_is_empty, extend_one, shrink_to, trusted_len)
+)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::needless_doctest_main)]
 
@@ -906,8 +906,8 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// assert_eq!(heap.len(), 0);
     /// ```
     #[inline]
-    #[cfg(feature = "drain_sorted")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "drain_sorted")))]
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn drain_sorted(&mut self) -> DrainSorted<'_, T, D> {
         DrainSorted { inner: self }
     }
@@ -930,8 +930,8 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.into_sorted_vec(), [-10, 2, 4])
     /// ```
-    #[cfg(feature = "retain")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "retain")))]
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn retain<F>(&mut self, f: F)
     where
         F: FnMut(&T) -> bool,
@@ -977,8 +977,8 @@ impl<T, D: Arity> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.into_iter_sorted().take(2).collect::<Vec<_>>(), vec![5, 4]);
     /// ```
-    #[cfg(feature = "into_iter_sorted")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "into_iter_sorted")))]
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn into_iter_sorted(self) -> IntoIterSorted<T, D> {
         IntoIterSorted { inner: self }
     }
@@ -1112,8 +1112,8 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// assert!(heap.capacity() >= 10);
     /// ```
     #[inline]
-    #[cfg(feature = "shrink_to")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "shrink_to")))]
+    #[cfg(feature = "unstable_nightly")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable_nightly")))]
     pub fn shrink_to(&mut self, min_capacity: usize) {
         self.data.shrink_to(min_capacity)
     }
@@ -1350,7 +1350,7 @@ impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
 }
 
 impl<T> ExactSizeIterator for Iter<'_, T> {
-    #[cfg(feature = "exact_size_is_empty")]
+    #[cfg(feature = "unstable_nightly")]
     fn is_empty(&self) -> bool {
         self.iter.is_empty()
     }
@@ -1400,7 +1400,7 @@ impl<T> DoubleEndedIterator for IntoIter<T> {
 }
 
 impl<T> ExactSizeIterator for IntoIter<T> {
-    #[cfg(feature = "exact_size_is_empty")]
+    #[cfg(feature = "unstable_nightly")]
     fn is_empty(&self) -> bool {
         self.iter.is_empty()
     }
@@ -1408,13 +1408,13 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 
 impl<T> FusedIterator for IntoIter<T> {}
 
-#[cfg(feature = "into_iter_sorted")]
+#[cfg(feature = "unstable")]
 #[derive(Clone, Debug)]
 pub struct IntoIterSorted<T, D: Arity> {
     inner: DaryHeap<T, D>,
 }
 
-#[cfg(feature = "into_iter_sorted")]
+#[cfg(feature = "unstable")]
 impl<T: Ord, D: Arity> Iterator for IntoIterSorted<T, D> {
     type Item = T;
 
@@ -1430,13 +1430,13 @@ impl<T: Ord, D: Arity> Iterator for IntoIterSorted<T, D> {
     }
 }
 
-#[cfg(feature = "into_iter_sorted")]
+#[cfg(feature = "unstable")]
 impl<T: Ord, D: Arity> ExactSizeIterator for IntoIterSorted<T, D> {}
 
-#[cfg(feature = "into_iter_sorted")]
+#[cfg(feature = "unstable")]
 impl<T: Ord, D: Arity> FusedIterator for IntoIterSorted<T, D> {}
 
-#[cfg(all(feature = "into_iter_sorted", feature = "trusted_len"))]
+#[cfg(all(feature = "unstable", feature = "unstable_nightly"))]
 unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for IntoIterSorted<T, D> {}
 
 /// A draining iterator over the elements of a `DaryHeap`.
@@ -1473,7 +1473,7 @@ impl<T> DoubleEndedIterator for Drain<'_, T> {
 }
 
 impl<T> ExactSizeIterator for Drain<'_, T> {
-    #[cfg(feature = "exact_size_is_empty")]
+    #[cfg(feature = "unstable_nightly")]
     fn is_empty(&self) -> bool {
         self.iter.is_empty()
     }
@@ -1488,13 +1488,13 @@ impl<T> FusedIterator for Drain<'_, T> {}
 ///
 /// [`drain_sorted`]: struct.DaryHeap.html#method.drain_sorted
 /// [`DaryHeap`]: struct.DaryHeap.html
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 #[derive(Debug)]
 pub struct DrainSorted<'a, T: Ord, D: Arity> {
     inner: &'a mut DaryHeap<T, D>,
 }
 
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
     /// Removes heap elements in heap order.
     fn drop(&mut self) {
@@ -1516,7 +1516,7 @@ impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
     }
 }
 
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 impl<T: Ord, D: Arity> Iterator for DrainSorted<'_, T, D> {
     type Item = T;
 
@@ -1532,13 +1532,13 @@ impl<T: Ord, D: Arity> Iterator for DrainSorted<'_, T, D> {
     }
 }
 
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 impl<T: Ord, D: Arity> ExactSizeIterator for DrainSorted<'_, T, D> {}
 
-#[cfg(feature = "drain_sorted")]
+#[cfg(feature = "unstable")]
 impl<T: Ord, D: Arity> FusedIterator for DrainSorted<'_, T, D> {}
 
-#[cfg(all(feature = "drain_sorted", feature = "trusted_len"))]
+#[cfg(all(feature = "unstable", feature = "unstable_nightly"))]
 unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for DrainSorted<'_, T, D> {}
 
 impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
@@ -1612,13 +1612,13 @@ impl<T: Ord, D: Arity> Extend<T> for DaryHeap<T, D> {
     }
 
     #[inline]
-    #[cfg(feature = "extend_one")]
+    #[cfg(feature = "unstable_nightly")]
     fn extend_one(&mut self, item: T) {
         self.push(item);
     }
 
     #[inline]
-    #[cfg(feature = "extend_one")]
+    #[cfg(feature = "unstable_nightly")]
     fn extend_reserve(&mut self, additional: usize) {
         self.reserve(additional);
     }
@@ -1641,13 +1641,13 @@ impl<'a, T: 'a + Ord + Copy, D: Arity> Extend<&'a T> for DaryHeap<T, D> {
     }
 
     #[inline]
-    #[cfg(feature = "extend_one")]
+    #[cfg(feature = "unstable_nightly")]
     fn extend_one(&mut self, &item: &'a T) {
         self.push(item);
     }
 
     #[inline]
-    #[cfg(feature = "extend_one")]
+    #[cfg(feature = "unstable_nightly")]
     fn extend_reserve(&mut self, additional: usize) {
         self.reserve(additional);
     }
