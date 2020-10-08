@@ -239,9 +239,6 @@ use core::slice;
 
 use alloc::{vec, vec::Vec};
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
 /// Marker to specify arity *d* in a *d*-ary heap.
 ///
 /// # Validity of arities in *d*-ary heaps
@@ -477,7 +474,7 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// [pop]: #method.pop
 /// [peek]: #method.peek
 /// [peek\_mut]: #method.peek_mut
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DaryHeap<T, D: Arity> {
     data: Vec<T>,
     marker: PhantomData<D>,
@@ -1758,8 +1755,8 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn serde() {
-        fn ser<T: Serialize>(_: &T) {}
-        fn de<'a, T: Deserialize<'a>>(_: &T) {}
+        fn ser<T: serde::Serialize>(_: &T) {}
+        fn de<'a, T: serde::Deserialize<'a>>(_: &T) {}
 
         let heap = QuaternaryHeap::<i32>::new();
         ser(&heap);
