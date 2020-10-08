@@ -16,9 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `unstable_nightly` for everything only available on nightly (previously
   `exact_size_is_empty`, `extend_one`, `shrink_to`, and `trusted_len`).
 
+### Fixed
+- Fix division by zero for unary heap in `append`.
+
 ## [0.1.0] &ndash; 2020-09-26
 ### Added
-- `DaryHeap` based on `std::collections::BinaryHeap`.
+- `DaryHeap` based on `std::collections::BinaryHeap` (Rust version 1.46.0).
 - `Arity` trait and `arity` macro to specify heap arity.
 - Arity markers for two to eight, `D2`&ndash;`D8`, and type aliases for heaps
   with those arities, `BinaryHeap`&ndash;`OctonaryHeap`.
@@ -26,9 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   features `drain_sorted`, `into_iter_sorted`, and `retain` that are available
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
-- Benchmarks to compare performance against standard library and between
-  different arities.
-- Fuzzing to catch possible bugs.
 
 [Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/hanmertens/dary_heap/releases/tag/v0.1.0
