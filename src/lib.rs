@@ -219,7 +219,7 @@
 //! }
 //! ```
 
-#![no_std]
+#![cfg_attr(has_alloc, no_std)]
 #![cfg_attr(
     feature = "unstable_nightly",
     feature(exact_size_is_empty, extend_one, shrink_to, trusted_len)
@@ -227,6 +227,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::needless_doctest_main)]
 
+#[cfg(has_alloc)]
 extern crate alloc;
 
 use core::fmt;
@@ -237,7 +238,10 @@ use core::ops::{Deref, DerefMut};
 use core::ptr;
 use core::slice;
 
+#[cfg(has_alloc)]
 use alloc::{vec, vec::Vec};
+#[cfg(not(has_alloc))]
+use std::{vec, vec::Vec};
 
 /// Marker to specify arity *d* in a *d*-ary heap.
 ///
@@ -1552,9 +1556,20 @@ impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
     }
 }
 
+#[cfg(rustc_1_41)]
+/// # Compatibility
+/// This trait is only implemented on Rust version 1.41.0 or greater. On earlier
+/// versions `Into<Vec<T>>` is implemented for `DaryHeap<T, D>` instead.
 impl<T, D: Arity> From<DaryHeap<T, D>> for Vec<T> {
     fn from(heap: DaryHeap<T, D>) -> Vec<T> {
         heap.data
+    }
+}
+
+#[cfg(not(rustc_1_41))]
+impl<T, D: Arity> Into<Vec<T>> for DaryHeap<T, D> {
+    fn into(self) -> Vec<T> {
+        self.data
     }
 }
 

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- MSRV lowered to 1.31.0, with caveats (`Vec::from(DaryHeap)` requires 1.41.0+;
+  `no_std` support and `serde` feature require 1.36.0+).
 
 ## [0.1.1] &ndash; 2020-10-08
 ### Added

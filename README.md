@@ -26,11 +26,24 @@ provide similar performance as that of the standard library, and the other heap
 types provided by this crate may provide performance improvements.
 
 The version of the standard library this crate is based on is currently 1.47.0.
-The minimum supported Rust version is currently 1.41.0; this can be increased in
-a minor level release, but not in a patch level release. There are no stability
-guarantees for the `unstable` and `unstable_nightly` features. Changes to the
-behavior of nullary heaps (that should not be used anyway) are also not
-considered to be breaking and can happen in a patch level release.
+The aim is to keep the crate in sync with the latest stable Rust release.
+
+The minimum supported Rust version (MSRV) is currently 1.31.0. There are some
+minor features that depend on a higher minimum version of Rust and are
+automatically detected:
+
+- Support for `From<DaryHeap<T, D>>` for `Vec<T>` requires at least Rust version
+  1.41.0. `Into<Vec<T>>` for `DaryHeap<T, D>` can be used on older versions.
+- Support for `no_std` (but with `alloc`) requires at least Rust version 1.36.0.
+- Enabling the `serde` feature also requires at least Rust version 1.36.0.
+
+The MSRV can be increased in a minor level release, but not in a patch level
+release.
+
+There are no stability guarantees for the `unstable` and `unstable_nightly`
+features. Changes to the behavior of nullary heaps (that should not be used
+anyway) are also not considered to be breaking and can happen in a patch level
+release.
 
 ## Features
 

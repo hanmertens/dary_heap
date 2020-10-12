@@ -12,11 +12,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [msrv, stable, beta, nightly, macos, windows]
+        build: [msrv, msrv-no-std, stable, beta, nightly, macos, windows]
         include:
           - build: msrv
             os: ubuntu-latest
-            rust: 1.41.0
+            rust: 1.31.0
+          - build: msrv-no-std
+            os: ubuntu-latest
+            rust: 1.36.0
           - build: stable
             os: ubuntu-latest
             rust: stable
@@ -44,17 +47,24 @@ jobs:
     - name: Build
       run: cargo build
     - name: Test
-      if: matrix.build != 'msrv'
+      if: startsWith(matrix.build, 'msrv') == false
       run: cargo test
     - name: Build with stable features
-      run: cargo build --features "serde unstable"
-    - name: Test with stable features
       if: matrix.build != 'msrv'
-      run: cargo test --features "serde unstable"
-    - name: Build with stable and nightly features
+      run: cargo build --features "serde"
+    - name: Test with stable features
+      if: startsWith(matrix.build, 'msrv') == false
+      run: cargo test --features "serde"
+    - name: Build with unstable features
+      if: startsWith(matrix.build, 'msrv') == false
+      run: cargo build --features "unstable"
+    - name: Test with unstable features
+      if: startsWith(matrix.build, 'msrv') == false
+      run: cargo test --features "unstable"
+    - name: Build with all features
       if: matrix.rust == 'nightly'
       run: cargo build --all-features
-    - name: Test with stable and nightly features
+    - name: Test with all features
       if: matrix.rust == 'nightly'
       run: cargo test --all-features
 

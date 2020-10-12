@@ -18,6 +18,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 unstable = []
 unstable_nightly = []
 
+[build-dependencies]
+autocfg = "1"
+
 [dependencies.serde]
 version = "1"
 default-features = false
