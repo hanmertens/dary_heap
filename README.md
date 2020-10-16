@@ -1,6 +1,6 @@
 # dary_heap
 
-[![CI](https://github.com/hanmertens/dary_heap/workflows/CI/badge.svg)](https://github.com/hanmertens/dary_heap/actions?query=workflow%3ACI)
+[![CI](https://github.com/hanmertens/dary_heap/workflows/CI/badge.svg)](https://github.com/hanmertens/dary_heap/actions?query=workflow%3ACI+branch%3Amaster)
 [![Crates.io](https://img.shields.io/crates/v/dary_heap.svg)](https://crates.io/crates/dary_heap)
 [![Docs.rs](https://docs.rs/dary_heap/badge.svg)](https://docs.rs/dary_heap)
 
