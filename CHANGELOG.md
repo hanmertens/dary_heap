@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Change `serde` serialization format to be the same as sequence types in the
+  standard library like `std::collections::BinaryHeap`.
 - MSRV lowered to 1.31.0, with caveats (`Vec::from(DaryHeap)` requires 1.41.0+;
   `no_std` support and `serde` feature require 1.36.0+).
+
+### Fixed
+- Ensure heaps are valid after deserializing via `serde`.
 
 ## [0.1.1] &ndash; 2020-10-08
 ### Added

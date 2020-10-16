@@ -478,10 +478,43 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// [pop]: #method.pop
 /// [peek]: #method.peek
 /// [peek\_mut]: #method.peek_mut
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DaryHeap<T, D: Arity> {
     data: Vec<T>,
     marker: PhantomData<D>,
+}
+
+#[cfg(feature = "serde")]
+mod serde_impl {
+    use super::{Arity, DaryHeap, Vec};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    impl<T: Serialize, D: Arity> Serialize for DaryHeap<T, D> {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            self.data.serialize(serializer)
+        }
+    }
+
+    impl<'de, T: Ord + Deserialize<'de>, A: Arity> Deserialize<'de> for DaryHeap<T, A> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            Vec::deserialize(deserializer).map(Into::into)
+        }
+
+        fn deserialize_in_place<D>(deserializer: D, place: &mut Self) -> Result<(), D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            place.data.clear();
+            let result = Vec::deserialize_in_place(deserializer, &mut place.data);
+            place.rebuild();
+            result
+        }
+    }
 }
 
 /// Structure wrapping a mutable reference to the greatest item on a
@@ -1770,11 +1803,30 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn serde() {
-        fn ser<T: serde::Serialize>(_: &T) {}
-        fn de<'a, T: serde::Deserialize<'a>>(_: &T) {}
+        use serde_test::Token::{Seq, SeqEnd, I32};
 
-        let heap = QuaternaryHeap::<i32>::new();
-        ser(&heap);
-        de(&heap);
+        impl<T: PartialEq, D: Arity> PartialEq for DaryHeap<T, D> {
+            fn eq(&self, other: &Self) -> bool {
+                self.iter().zip(other).all(|(a, b)| a == b)
+            }
+        }
+
+        let empty = [Seq { len: Some(0) }, SeqEnd];
+        let part = [Seq { len: Some(3) }, I32(3), I32(1), I32(2), SeqEnd];
+        let full = [Seq { len: Some(4) }, I32(4), I32(3), I32(2), I32(1), SeqEnd];
+
+        let mut dary = BinaryHeap::<i32>::new();
+        serde_test::assert_tokens(&dary, &empty);
+        dary.extend(&[1, 2, 3]);
+        serde_test::assert_tokens(&dary, &part);
+        dary.push(4);
+        serde_test::assert_tokens(&dary, &full);
+
+        let mut std = alloc::collections::BinaryHeap::<i32>::new();
+        serde_test::assert_ser_tokens(&std, &empty);
+        std.extend(&[1, 2, 3]);
+        serde_test::assert_ser_tokens(&std, &part);
+        std.push(4);
+        serde_test::assert_ser_tokens(&std, &full);
     }
 }

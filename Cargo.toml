@@ -24,12 +24,13 @@ autocfg = "1"
 [dependencies.serde]
 version = "1"
 default-features = false
-features = ["alloc", "derive"]
+features = ["alloc"]
 optional = true
 
 [dev-dependencies]
 criterion = "0.3"
 rand = "0.7"
+serde_test = "1"
 
 [[bench]]
 name = "dary_heap"
