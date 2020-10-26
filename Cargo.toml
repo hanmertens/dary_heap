@@ -9,6 +9,7 @@ repository = "https://github.com/hanmertens/dary_heap"
 readme = "README.md"
 keywords = ["heap", "priority-queue", "no_std"]
 categories = ["data-structures"]
+include = ["build.rs", "CHANGELOG.md", "LICENSE-*", "README.md", "/src/"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -34,4 +35,5 @@ serde_test = "1"
 
 [[bench]]
 name = "dary_heap"
+path = "benches/dary_heap.rs"
 harness = false
