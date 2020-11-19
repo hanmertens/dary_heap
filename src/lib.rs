@@ -93,7 +93,6 @@
 //! [dijkstra]: https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 //! [sssp]: https://en.wikipedia.org/wiki/Shortest_path_problem
 //! [dir_graph]: https://en.wikipedia.org/wiki/Directed_graph
-//! [`DaryHeap`]: struct.DaryHeap.html
 //!
 //! ```
 //! use std::cmp::Ordering;
@@ -109,7 +108,7 @@
 //! // Explicitly implement the trait so the queue becomes a min-heap
 //! // instead of a max-heap.
 //! impl Ord for State {
-//!     fn cmp(&self, other: &State) -> Ordering {
+//!     fn cmp(&self, other: &Self) -> Ordering {
 //!         // Notice that the we flip the ordering on costs.
 //!         // In case of a tie we compare positions - this step is necessary
 //!         // to make implementations of `PartialEq` and `Ord` consistent.
@@ -120,7 +119,7 @@
 //!
 //! // `PartialOrd` needs to be implemented as well.
 //! impl PartialOrd for State {
-//!     fn partial_cmp(&self, other: &State) -> Option<Ordering> {
+//!     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 //!         Some(self.cmp(other))
 //!     }
 //! }
@@ -222,7 +221,13 @@
 #![cfg_attr(has_alloc, no_std)]
 #![cfg_attr(
     feature = "unstable_nightly",
-    feature(exact_size_is_empty, extend_one, shrink_to, trusted_len)
+    feature(
+        exact_size_is_empty,
+        extend_one,
+        inplace_iteration,
+        shrink_to,
+        trusted_len
+    )
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::needless_doctest_main)]
@@ -474,10 +479,10 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// The value for `push` is an expected cost; the method documentation gives a
 /// more detailed analysis.
 ///
-/// [push]: #method.push
-/// [pop]: #method.pop
-/// [peek]: #method.peek
-/// [peek\_mut]: #method.peek_mut
+/// [push]: DaryHeap::push
+/// [pop]: DaryHeap::pop
+/// [peek]: DaryHeap::peek
+/// [peek\_mut]: DaryHeap::peek_mut
 pub struct DaryHeap<T, D: Arity> {
     data: Vec<T>,
     marker: PhantomData<D>,
@@ -523,8 +528,7 @@ mod serde_impl {
 /// This `struct` is created by the [`peek_mut`] method on [`DaryHeap`]. See
 /// its documentation for more.
 ///
-/// [`peek_mut`]: struct.DaryHeap.html#method.peek_mut
-/// [`DaryHeap`]: struct.DaryHeap.html
+/// [`peek_mut`]: DaryHeap::peek_mut
 pub struct PeekMut<'a, T: 'a + Ord, D: Arity> {
     heap: &'a mut DaryHeap<T, D>,
     sift: bool,
@@ -556,6 +560,7 @@ impl<T: Ord, D: Arity> Deref for PeekMut<'_, T, D> {
 impl<T: Ord, D: Arity> DerefMut for PeekMut<'_, T, D> {
     fn deref_mut(&mut self) -> &mut T {
         debug_assert!(!self.heap.is_empty());
+        self.sift = true;
         // SAFE: PeekMut is only instantiated for non-empty heaps
         unsafe { self.heap.data.get_unchecked_mut(0) }
     }
@@ -664,14 +669,15 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     ///
     /// # Time complexity
     ///
-    /// Cost is *O*(1) in the worst case.
+    /// If the item is modified then the worst case time complexity is *O*(log(*n*)),
+    /// otherwise it's *O*(1).
     pub fn peek_mut(&mut self) -> Option<PeekMut<'_, T, D>> {
         if self.is_empty() {
             None
         } else {
             Some(PeekMut {
                 heap: self,
-                sift: true,
+                sift: false,
             })
         }
     }
@@ -1081,7 +1087,7 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// heap.push(4);
     /// ```
     ///
-    /// [`reserve`]: #method.reserve
+    /// [`reserve`]: DaryHeap::reserve
     pub fn reserve_exact(&mut self, additional: usize) {
         self.data.reserve_exact(additional);
     }
@@ -1333,11 +1339,10 @@ impl<T> Drop for Hole<'_, T> {
 
 /// An iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`iter`] method on [`DaryHeap`]. See its
+/// This `struct` is created by [`DaryHeap::iter()`]. See its
 /// documentation for more.
 ///
-/// [`iter`]: struct.DaryHeap.html#method.iter
-/// [`DaryHeap`]: struct.DaryHeap.html
+/// [`iter`]: DaryHeap::iter
 pub struct Iter<'a, T: 'a> {
     iter: slice::Iter<'a, T>,
 }
@@ -1394,11 +1399,10 @@ impl<T> FusedIterator for Iter<'_, T> {}
 
 /// An owning iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`into_iter`] method on [`DaryHeap`]
+/// This `struct` is created by [`DaryHeap::into_iter()`]
 /// (provided by the `IntoIterator` trait). See its documentation for more.
 ///
-/// [`into_iter`]: struct.DaryHeap.html#method.into_iter
-/// [`DaryHeap`]: struct.DaryHeap.html
+/// [`into_iter`]: DaryHeap::into_iter
 #[derive(Clone)]
 pub struct IntoIter<T> {
     iter: vec::IntoIter<T>,
@@ -1442,6 +1446,19 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 
 impl<T> FusedIterator for IntoIter<T> {}
 
+#[cfg(feature = "unstable_nightly")]
+unsafe impl<T> core::iter::SourceIter for IntoIter<T> {
+    type Source = IntoIter<T>;
+
+    #[inline]
+    unsafe fn as_inner(&mut self) -> &mut Self::Source {
+        self
+    }
+}
+
+#[cfg(feature = "unstable_nightly")]
+unsafe impl<I> core::iter::InPlaceIterable for IntoIter<I> {}
+
 #[cfg(feature = "unstable")]
 #[derive(Clone, Debug)]
 pub struct IntoIterSorted<T, D: Arity> {
@@ -1475,11 +1492,10 @@ unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for IntoIterSorted<T, D> {}
 
 /// A draining iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`drain`] method on [`DaryHeap`]. See its
+/// This `struct` is created by [`DaryHeap::drain()`]. See its
 /// documentation for more.
 ///
-/// [`drain`]: struct.DaryHeap.html#method.drain
-/// [`DaryHeap`]: struct.DaryHeap.html
+/// [`drain`]: DaryHeap::drain
 #[derive(Debug)]
 pub struct Drain<'a, T: 'a> {
     iter: vec::Drain<'a, T>,
@@ -1517,11 +1533,10 @@ impl<T> FusedIterator for Drain<'_, T> {}
 
 /// A draining iterator over the elements of a `DaryHeap`.
 ///
-/// This `struct` is created by the [`drain_sorted`] method on [`DaryHeap`]. See its
+/// This `struct` is created by [`DaryHeap::drain_sorted()`]. See its
 /// documentation for more.
 ///
-/// [`drain_sorted`]: struct.DaryHeap.html#method.drain_sorted
-/// [`DaryHeap`]: struct.DaryHeap.html
+/// [`drain_sorted`]: DaryHeap::drain_sorted
 #[cfg(feature = "unstable")]
 #[derive(Debug)]
 pub struct DrainSorted<'a, T: Ord, D: Arity> {
@@ -1594,6 +1609,10 @@ impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
 /// This trait is only implemented on Rust version 1.41.0 or greater. On earlier
 /// versions `Into<Vec<T>>` is implemented for `DaryHeap<T, D>` instead.
 impl<T, D: Arity> From<DaryHeap<T, D>> for Vec<T> {
+    /// Converts a `DaryHeap<T, D>` into a `Vec<T>`.
+    ///
+    /// This conversion requires no data movement or allocation, and has
+    /// constant time complexity.
     fn from(heap: DaryHeap<T, D>) -> Vec<T> {
         heap.data
     }
