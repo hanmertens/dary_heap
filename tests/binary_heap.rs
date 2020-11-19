@@ -250,7 +250,7 @@ fn test_in_place_iterator_specialization() {
     let heap_ptr = heap.iter().next().unwrap() as *const usize;
     assert_eq!(src_ptr, heap_ptr);
     let sink: Vec<_> = heap.into_iter().map(std::convert::identity).collect();
-    let sink_ptr = sink.as_ptr();
+    let _sink_ptr = sink.as_ptr();
     // Enabling specialization when collecting a binary heap into a vector would
     // require implementing private traits of `alloc`, so this optimization is
     // currently not possible for `DaryHeap`.
