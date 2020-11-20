@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.1] &ndash; 2020-11-20
 ### Added
 - Implement `SourceIter` and `InplaceIterable` for `IntoIter` when
   `unstable_nightly` is enabled.
@@ -50,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/hanmertens/dary_heap/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/hanmertens/dary_heap/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/hanmertens/dary_heap/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/hanmertens/dary_heap/releases/tag/v0.1.0
