@@ -770,7 +770,14 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         let mut end = self.len();
         while end > 1 {
             end -= 1;
-            self.data.swap(0, end);
+            // SAFETY: `end` goes from `self.len() - 1` to 1 (both included),
+            //  so it's always a valid index to access.
+            //  It is safe to access index 0 (i.e. `ptr`), because
+            //  1 <= end < self.len(), which means self.len() >= 2.
+            unsafe {
+                let ptr = self.data.as_mut_ptr();
+                ptr::swap(ptr, ptr.add(end));
+            }
             self.sift_down_range(0, end);
         }
         self.into_vec()
@@ -808,19 +815,27 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
             let mut child = D::D * pos + 1;
-            while child < end {
+            while child <= end.saturating_sub(D::D) {
                 // compare with the greatest of the d children
                 for other_child in child + 1..child + D::D {
-                    if other_child < end && hole.get(child) <= hole.get(other_child) {
+                    if hole.get(child) <= hole.get(other_child) {
                         child = other_child;
                     }
                 }
                 // if we are already in order, stop.
                 if hole.element() >= hole.get(child) {
-                    break;
+                    return;
                 }
                 hole.move_to(child);
                 child = D::D * hole.pos() + 1;
+            }
+            for other_child in child + 1..end {
+                if hole.get(child) <= hole.get(other_child) {
+                    child = other_child;
+                }
+            }
+            if child < end && hole.element() < hole.get(child) {
+                hole.move_to(child);
             }
         }
     }
@@ -842,15 +857,23 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
             let mut child = D::D * pos + 1;
-            while child < end {
+            while child <= end.saturating_sub(D::D) {
                 // compare with the greatest of the d children
                 for other_child in child + 1..child + D::D {
-                    if other_child < end && hole.get(child) <= hole.get(other_child) {
+                    if hole.get(child) <= hole.get(other_child) {
                         child = other_child;
                     }
                 }
                 hole.move_to(child);
                 child = D::D * hole.pos() + 1;
+            }
+            for other_child in child + 1..end {
+                if hole.get(child) <= hole.get(other_child) {
+                    child = other_child;
+                }
+            }
+            if child < end {
+                hole.move_to(child);
             }
             pos = hole.pos;
         }
@@ -1319,8 +1342,9 @@ impl<'a, T> Hole<'a, T> {
     unsafe fn move_to(&mut self, index: usize) {
         debug_assert!(index != self.pos);
         debug_assert!(index < self.data.len());
-        let index_ptr: *const _ = self.data.get_unchecked(index);
-        let hole_ptr = self.data.get_unchecked_mut(self.pos);
+        let ptr = self.data.as_mut_ptr();
+        let index_ptr: *const _ = ptr.add(index);
+        let hole_ptr = ptr.add(self.pos);
         ptr::copy_nonoverlapping(index_ptr, hole_ptr, 1);
         self.pos = index;
     }
