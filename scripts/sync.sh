@@ -29,5 +29,7 @@ git diff "${current}" "${new}" "${alloc}/src/collections/binary_heap.rs" \
     | patch --merge=diff3 "${base}/../src/lib.rs"
 git diff "${current}" "${new}" "${alloc}/tests/binary_heap.rs" \
     | patch --merge=diff3 "${base}/../tests/binary_heap.rs"
+git diff "${current}" "${new}" "${alloc}/benches/binary_heap.rs" \
+    | patch --merge=diff3 "${base}/../benches/binary_heap.rs"
 
 echo "${new}" > "${current_file}"
