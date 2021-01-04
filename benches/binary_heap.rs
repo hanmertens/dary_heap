@@ -1,3 +1,7 @@
+#![feature(test)]
+
+extern crate test;
+
 use std::collections::BinaryHeap;
 
 use rand::{seq::SliceRandom, thread_rng};
