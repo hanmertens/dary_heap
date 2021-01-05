@@ -817,11 +817,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
             let mut child = D::D * pos + 1;
             while child <= end.saturating_sub(D::D) {
                 // compare with the greatest of the d children
-                for other_child in child + 1..child + D::D {
-                    if hole.get(child) <= hole.get(other_child) {
-                        child = other_child;
-                    }
-                }
+                child = hole.max_sibling::<D>(child);
                 // if we are already in order, stop.
                 if hole.element() >= hole.get(child) {
                     return;
@@ -829,11 +825,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
                 hole.move_to(child);
                 child = D::D * hole.pos() + 1;
             }
-            for other_child in child + 1..end {
-                if hole.get(child) <= hole.get(other_child) {
-                    child = other_child;
-                }
-            }
+            child = hole.max_sibling_to::<D>(child, end);
             if child < end && hole.element() < hole.get(child) {
                 hole.move_to(child);
             }
@@ -859,19 +851,11 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
             let mut child = D::D * pos + 1;
             while child <= end.saturating_sub(D::D) {
                 // compare with the greatest of the d children
-                for other_child in child + 1..child + D::D {
-                    if hole.get(child) <= hole.get(other_child) {
-                        child = other_child;
-                    }
-                }
+                child = hole.max_sibling::<D>(child);
                 hole.move_to(child);
                 child = D::D * hole.pos() + 1;
             }
-            for other_child in child + 1..end {
-                if hole.get(child) <= hole.get(other_child) {
-                    child = other_child;
-                }
-            }
+            child = hole.max_sibling_to::<D>(child, end);
             if child < end {
                 hole.move_to(child);
             }
@@ -1347,6 +1331,38 @@ impl<'a, T> Hole<'a, T> {
         let hole_ptr = ptr.add(self.pos);
         ptr::copy_nonoverlapping(index_ptr, hole_ptr, 1);
         self.pos = index;
+    }
+}
+
+impl<'a, T: Ord> Hole<'a, T> {
+    /// Get index of greatest sibling
+    ///
+    /// Unsafe because all siblings must be within the data slice and not equal
+    /// to pos.
+    #[inline]
+    unsafe fn max_sibling<D: Arity>(&self, first_sibling: usize) -> usize {
+        let mut sibling = first_sibling;
+        for other_sibling in sibling + 1..sibling + D::D {
+            if self.get(sibling) <= self.get(other_sibling) {
+                sibling = other_sibling;
+            }
+        }
+        sibling
+    }
+
+    /// Get index of greatest sibling within range
+    ///
+    /// Unsafe because end must be the length of the data slice and no sibling
+    /// may be equal to pos.
+    #[inline]
+    unsafe fn max_sibling_to<D: Arity>(&self, first_sibling: usize, end: usize) -> usize {
+        let mut sibling = first_sibling;
+        for other_sibling in sibling + 1..end {
+            if self.get(sibling) <= self.get(other_sibling) {
+                sibling = other_sibling;
+            }
+        }
+        sibling
     }
 }
 
