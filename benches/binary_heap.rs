@@ -2,7 +2,7 @@
 
 extern crate test;
 
-use std::collections::BinaryHeap;
+use dary_heap::BinaryHeap;
 
 use rand::{seq::SliceRandom, thread_rng};
 use test::{black_box, Bencher};
