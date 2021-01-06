@@ -1335,6 +1335,19 @@ impl<'a, T> Hole<'a, T> {
 }
 
 impl<'a, T: Ord> Hole<'a, T> {
+    /// Get largest element
+    ///
+    /// Unsafe because both elements must be within the data slice and not equal
+    /// to pos.
+    #[inline]
+    unsafe fn max(&self, elem1: usize, elem2: usize) -> usize {
+        if self.get(elem1) <= self.get(elem2) {
+            elem2
+        } else {
+            elem1
+        }
+    }
+
     /// Get index of greatest sibling
     ///
     /// Unsafe because all siblings must be within the data slice and not equal
@@ -1342,9 +1355,26 @@ impl<'a, T: Ord> Hole<'a, T> {
     #[inline]
     unsafe fn max_sibling<D: Arity>(&self, first_sibling: usize) -> usize {
         let mut sibling = first_sibling;
-        for other_sibling in sibling + 1..sibling + D::D {
-            if self.get(sibling) <= self.get(other_sibling) {
-                sibling = other_sibling;
+        match D::D {
+            2 => {
+                sibling += (self.get(sibling) <= self.get(sibling + 1)) as usize;
+            }
+            3 => {
+                let sibling_a = self.max_sibling::<D2>(sibling);
+                let sibling_b = sibling + 2;
+                sibling = self.max(sibling_a, sibling_b);
+            }
+            4 => {
+                let sibling_a = self.max_sibling::<D2>(sibling);
+                let sibling_b = self.max_sibling::<D2>(sibling + 2);
+                sibling = self.max(sibling_a, sibling_b);
+            }
+            _ => {
+                for other_sibling in sibling + 1..sibling + D::D {
+                    if self.get(sibling) <= self.get(other_sibling) {
+                        sibling = other_sibling;
+                    }
+                }
             }
         }
         sibling
@@ -1352,14 +1382,25 @@ impl<'a, T: Ord> Hole<'a, T> {
 
     /// Get index of greatest sibling within range
     ///
-    /// Unsafe because end must be the length of the data slice and no sibling
-    /// may be equal to pos.
+    /// Unsafe because end must be the length of the data slice, last sibling
+    /// must be outside of the data slice and no sibling may be equal to pos.
+    /// It is allowed for first_sibling to be outside of the data slice.
     #[inline]
     unsafe fn max_sibling_to<D: Arity>(&self, first_sibling: usize, end: usize) -> usize {
         let mut sibling = first_sibling;
-        for other_sibling in sibling + 1..end {
-            if self.get(sibling) <= self.get(other_sibling) {
-                sibling = other_sibling;
+        match D::D {
+            2 => {}
+            3 => {
+                if sibling + 1 < end {
+                    sibling = self.max_sibling::<D2>(sibling);
+                }
+            }
+            _ => {
+                for other_sibling in sibling + 1..end {
+                    if self.get(sibling) <= self.get(other_sibling) {
+                        sibling = other_sibling;
+                    }
+                }
             }
         }
         sibling

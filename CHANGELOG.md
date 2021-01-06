@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Synchronize source code with standard library of Rust version 1.49.0.
+- Performance improvements, especially for arities up to four due to specialized
+  code for those arities.
 
 ## [0.2.1] &ndash; 2020-11-20
 ### Added
