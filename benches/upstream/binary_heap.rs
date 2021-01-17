@@ -1,8 +1,4 @@
-#![feature(test)]
-
-extern crate test;
-
-use dary_heap::BinaryHeap;
+use super::BinaryHeap;
 
 use rand::{seq::SliceRandom, thread_rng};
 use test::{black_box, Bencher};
