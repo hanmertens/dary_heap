@@ -109,3 +109,33 @@ jobs:
       run: cargo fmt -- --check
     - name: Check documentation
       run: cargo doc --features serde,unstable --no-deps
+
+  miri:
+    name: Miri
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+    - name: Install Rust toolchain
+      id: rust-toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+        components: miri
+    - name: Update Cargo.lock
+      run: cargo update
+    - name: Cache cargo directories
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/miri
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-miri-${{ hashFiles('Cargo.lock') }}
+        restore-keys: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-miri-
+    - name: Setup Miri
+      run: cargo miri setup
+    - name: Test with all features using Miri
+      run: cargo miri test --all-features
