@@ -63,16 +63,16 @@ jobs:
       run: cargo test
     - name: Build with stable features
       if: matrix.build != 'msrv'
-      run: cargo build --features "serde"
+      run: cargo build --features serde
     - name: Test with stable features
       if: startsWith(matrix.build, 'msrv') == false
-      run: cargo test --features "serde"
+      run: cargo test --features serde
     - name: Build with unstable features
       if: startsWith(matrix.build, 'msrv') == false
-      run: cargo build --features "unstable"
+      run: cargo build --features unstable
     - name: Test with unstable features
       if: startsWith(matrix.build, 'msrv') == false
-      run: cargo test --features "unstable"
+      run: cargo test --features unstable
     - name: Build with all features
       if: matrix.rust == 'nightly'
       run: cargo build --all-features
@@ -86,7 +86,7 @@ jobs:
     steps:
     - name: Check out repository
       uses: actions/checkout@v2
-    - name: Install Rust
+    - name: Install Rust toolchain
       id: rust-toolchain
       uses: actions-rs/toolchain@v1
       with:
