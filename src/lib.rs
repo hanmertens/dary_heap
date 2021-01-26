@@ -1825,8 +1825,8 @@ mod tests {
 
     fn pop<D: Arity>() {
         let mut rng = thread_rng();
-        let ntest = 10;
-        let nelem = 1000;
+        let ntest = if cfg!(miri) { 1 } else { 10 };
+        let nelem = if cfg!(miri) { 100 } else { 1000 };
         for _ in 0..ntest {
             let mut data: Vec<_> = (0..nelem).collect();
             data.shuffle(&mut rng);
