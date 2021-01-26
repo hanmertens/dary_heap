@@ -30,7 +30,7 @@ optional = true
 
 [dev-dependencies]
 criterion = "0.3"
-rand = "0.7"
+rand = "0.8"
 serde_test = "1"
 
 [[bench]]
