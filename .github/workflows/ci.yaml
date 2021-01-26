@@ -104,8 +104,8 @@ jobs:
         key: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-lint-${{ hashFiles('Cargo.lock') }}
         restore-keys: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-lint-
     - name: Check clippy
-      run: cargo clippy
+      run: cargo clippy --features serde,unstable
     - name: Check formatting
       run: cargo fmt -- --check
     - name: Check documentation
-      run: cargo doc --no-deps
+      run: cargo doc --features serde,unstable --no-deps
