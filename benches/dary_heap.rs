@@ -3,14 +3,13 @@ use dary_heap::{Arity, DaryHeap, D2, D3, D4, D5, D6, D7, D8};
 use rand::{seq::SliceRandom, thread_rng};
 use std::collections::BinaryHeap;
 use std::convert::identity;
-use std::iter::FromIterator;
 
 /// Data type we want to use
 type T = u32;
 
 /// Produce shuffled vector containing values 0..n
 fn random_data(n: T) -> Vec<T> {
-    let mut data = Vec::from_iter(0..n);
+    let mut data: Vec<_> = (0..n).collect();
     data.shuffle(&mut thread_rng());
     data
 }
