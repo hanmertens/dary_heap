@@ -383,7 +383,10 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// It is a logic error for an item to be modified in such a way that the
 /// item's ordering relative to any other item, as determined by the `Ord`
 /// trait, changes while it is in the heap. This is normally only possible
-/// through `Cell`, `RefCell`, global state, I/O, or unsafe code.
+/// through `Cell`, `RefCell`, global state, I/O, or unsafe code. The
+/// behavior resulting from such a logic error is not specified, but will
+/// not result in undefined behavior. This could include panics, incorrect
+/// results, aborts, memory leaks, and non-termination.
 ///
 /// # Usage
 ///
@@ -915,12 +918,19 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         // with n = d / (d - 1)
         // while `extend` takes O(len2 * log(len1)) operations
         // and about 1 * len2 * log_d(len1) comparisons in the worst case,
-        // assuming len1 >= len2.
+        // assuming len1 >= len2. For larger heaps, the crossover point
+        // no longer follows this reasoning and was determined empirically.
         #[inline]
         fn better_to_rebuild<D: Arity>(len1: usize, len2: usize) -> bool {
             assert_ne!(D::D, 0, "Arity should be greater than zero");
-            let logd_len1 = log2_fast(len1) / if D::D > 1 { log2_fast(D::D) } else { 1 };
-            D::D * (len1 + len2) < (D::D - 1) * len2 * logd_len1
+            let tot_len = len1 + len2;
+            // TODO optimize heuristic for D > 2
+            if tot_len <= 2048 {
+                let logd_len1 = log2_fast(len1) / if D::D > 1 { log2_fast(D::D) } else { 1 };
+                D::D * tot_len < (D::D - 1) * len2 * logd_len1
+            } else {
+                D::D * tot_len < len2 * 11
+            }
         }
 
         if better_to_rebuild::<D>(self.len(), other.len()) {
@@ -1144,8 +1154,7 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// The capacity will remain at least as large as both the length
     /// and the supplied value.
     ///
-    /// Panics if the current capacity is smaller than the supplied
-    /// minimum capacity.
+    /// If the current capacity is less than the lower limit, this is a no-op.
     ///
     /// # Examples
     ///
@@ -1198,6 +1207,7 @@ impl<T, D: Arity> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.len(), 2);
     /// ```
+    #[cfg_attr(rustc_1_48, doc(alias = "length"))]
     pub fn len(&self) -> usize {
         self.data.len()
     }
