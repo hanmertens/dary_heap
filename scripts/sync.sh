@@ -12,7 +12,7 @@ cd "$(dirname "$0")" || { echo "Could not cd into base directory"; exit 1; }
 base="$(pwd)"
 
 rust="$1"
-alloc="${rust}/library/alloc"
+alloc="library/alloc"
 
 current_file="${base}/sync-current"
 current_rev="$(<"${current_file}")" || { echo "Invalid current revision"; exit 1; }
