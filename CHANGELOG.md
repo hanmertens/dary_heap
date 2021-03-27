@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Synchronize source code with standard library of Rust version 1.51.0.
+- Performance improvement for `DaryHeap::append`.
 
 ## [0.2.2] &ndash; 2021-01-13
 ### Changed
