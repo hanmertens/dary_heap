@@ -15,6 +15,14 @@
 //! crate over the standard library lies in the possibility of easily changing
 //! the arity of the heap, which can increase performance.
 //!
+//! The standard library binary heap can contain up to [`isize::MAX`] elements;
+//! this is the same for the binary heap of this crate, but other heaps in this
+//! crate can hold less elements. In the general case, the maximum number of
+//! elements is ([`usize::MAX`] - 1) / *d* for an arity of *d*. On 64-bit systems
+//! this should generally not be a concern when using reasonable arities. On
+//! 32-bit systems this may be a concern when using very large heaps with a
+//! relatively high arity.
+//!
 //! [std]: https://doc.rust-lang.org/std/collections/struct.BinaryHeap.html
 //!
 //! # Comparison of different arities *d*
