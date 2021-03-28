@@ -226,7 +226,7 @@
 //! }
 //! ```
 
-#![cfg_attr(has_alloc, no_std)]
+#![no_std]
 #![cfg_attr(
     feature = "unstable_nightly",
     feature(
@@ -240,7 +240,6 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::needless_doctest_main)]
 
-#[cfg(has_alloc)]
 extern crate alloc;
 
 use core::fmt;
@@ -250,10 +249,7 @@ use core::ops::{Deref, DerefMut};
 use core::ptr;
 use core::slice;
 
-#[cfg(has_alloc)]
 use alloc::{vec, vec::Vec};
-#[cfg(not(has_alloc))]
-use std::{vec, vec::Vec};
 
 /// A binary heap (*d* = 2).
 pub type BinaryHeap<T> = DaryHeap<T, 2>;
@@ -1099,7 +1095,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.len(), 2);
     /// ```
-    #[cfg_attr(rustc_1_48, doc(alias = "length"))]
+    #[doc(alias = "length")]
     pub fn len(&self) -> usize {
         self.data.len()
     }
@@ -1584,10 +1580,6 @@ impl<T: Ord, const D: usize> From<Vec<T>> for DaryHeap<T, D> {
     }
 }
 
-#[cfg(rustc_1_41)]
-/// # Compatibility
-/// This trait is only implemented on Rust version 1.41.0 or greater. On earlier
-/// versions `Into<Vec<T>>` is implemented for `DaryHeap<T, D>` instead.
 impl<T, const D: usize> From<DaryHeap<T, D>> for Vec<T> {
     /// Converts a `DaryHeap<T, D>` into a `Vec<T>`.
     ///
@@ -1595,13 +1587,6 @@ impl<T, const D: usize> From<DaryHeap<T, D>> for Vec<T> {
     /// constant time complexity.
     fn from(heap: DaryHeap<T, D>) -> Vec<T> {
         heap.data
-    }
-}
-
-#[cfg(not(rustc_1_41))]
-impl<T, const D: usize> Into<Vec<T>> for DaryHeap<T, D> {
-    fn into(self) -> Vec<T> {
-        self.data
     }
 }
 

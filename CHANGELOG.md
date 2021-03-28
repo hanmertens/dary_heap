@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Use const generics to specify arity instead of `Arity` trait.
+- Raise MSRV to 1.51.0 for const generics support.
 
 ## [0.2.3] &ndash; 2021-03-27
 ### Changed

@@ -28,14 +28,9 @@ types provided by this crate may provide performance improvements.
 The version of the standard library this crate is based on is currently 1.51.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
-The minimum supported Rust version (MSRV) is currently 1.31.0. There are some
-minor features that depend on a higher minimum version of Rust and are
-automatically detected:
-
-- Support for `From<DaryHeap<T, D>>` for `Vec<T>` requires at least Rust version
-  1.41.0. `Into<Vec<T>>` for `DaryHeap<T, D>` can be used on older versions.
-- Support for `no_std` (but with `alloc`) requires at least Rust version 1.36.0.
-- Enabling the `serde` feature also requires at least Rust version 1.36.0.
+The minimum supported Rust version (MSRV) is currently 1.51.0. The last version
+without const generics has a MSRV of 1.31.0 and is being maintained on [the
+non-const-generics branch][non-const-generics] of this repository.
 
 The MSRV can be increased in a minor level release, but not in a patch level
 release.
@@ -78,4 +73,5 @@ at your option.
 
 [wiki]: https://en.wikipedia.org/wiki/D-ary_heap
 [std-binaryheap]: https://doc.rust-lang.org/std/collections/struct.BinaryHeap.html
+[non-const-generics]: https://github.com/hanmertens/dary_heap/tree/non-const-generics
 [serde]: https://serde.rs
