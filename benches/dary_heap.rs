@@ -1,5 +1,5 @@
 use criterion::*;
-use dary_heap::{Arity, DaryHeap, D2, D3, D4, D5, D6, D7, D8};
+use dary_heap::DaryHeap;
 use rand::{seq::SliceRandom, thread_rng};
 use std::collections::BinaryHeap;
 use std::convert::identity;
@@ -18,7 +18,7 @@ fn make_std_heap(data: Vec<T>) -> BinaryHeap<T> {
     BinaryHeap::from(data)
 }
 
-fn make_dary_heap<D: Arity>(data: Vec<T>) -> DaryHeap<T, D> {
+fn make_dary_heap<const D: usize>(data: Vec<T>) -> DaryHeap<T, D> {
     DaryHeap::<T, D>::from(data)
 }
 
@@ -27,7 +27,7 @@ fn std_heap_pop(mut heap: BinaryHeap<T>) -> BinaryHeap<T> {
     heap
 }
 
-fn dary_heap_pop<D: Arity>(mut heap: DaryHeap<T, D>) -> DaryHeap<T, D> {
+fn dary_heap_pop<const D: usize>(mut heap: DaryHeap<T, D>) -> DaryHeap<T, D> {
     heap.pop();
     heap
 }
@@ -37,7 +37,7 @@ fn std_heap_push((mut heap, elem): (BinaryHeap<T>, T)) -> BinaryHeap<T> {
     heap
 }
 
-fn dary_heap_push<D: Arity>((mut heap, elem): (DaryHeap<T, D>, T)) -> DaryHeap<T, D> {
+fn dary_heap_push<const D: usize>((mut heap, elem): (DaryHeap<T, D>, T)) -> DaryHeap<T, D> {
     heap.push(elem);
     heap
 }
@@ -61,26 +61,26 @@ macro_rules! heap_bench {
                 group.bench_function(BenchmarkId::new("BinaryHeap", i), |b| {
                     b.iter_batched(|| $data(random_data(i)), $std_fn, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D2>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D2>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<2>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<2>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D3>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D3>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<3>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<3>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D4>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<4>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<4>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D5>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D5>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<5>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<5>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D6>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D6>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<6>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<6>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D7>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D7>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<7>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<7>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
-                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<D8>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<8>", i), |b| {
+                    b.iter_batched(|| $data(random_data(i)), $dary_fn::<8>, size)
                 });
             }
         }
@@ -101,7 +101,7 @@ fn std_heap_append((mut heap1, mut heap2): (BinaryHeap<T>, BinaryHeap<T>)) -> Bi
     heap1
 }
 
-fn dary_heap_append<D: Arity>(
+fn dary_heap_append<const D: usize>(
     (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
 ) -> DaryHeap<T, D> {
     heap1.append(&mut heap2);
@@ -116,7 +116,7 @@ fn std_heap_extend((mut heap1, mut heap2): (BinaryHeap<T>, BinaryHeap<T>)) -> Bi
     heap1
 }
 
-fn dary_heap_extend<D: Arity>(
+fn dary_heap_extend<const D: usize>(
     (mut heap1, mut heap2): (DaryHeap<T, D>, DaryHeap<T, D>),
 ) -> DaryHeap<T, D> {
     if heap1.len() < heap2.len() {
@@ -140,26 +140,26 @@ macro_rules! heap_bench_merge {
                 group.bench_function(BenchmarkId::new("BinaryHeap", i), |b| {
                     b.iter_batched(|| $data(random_data(base), i), $std_fn, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D2>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D2>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<2>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<2>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D3>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D3>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<3>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<3>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D4>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D4>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<4>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<4>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D5>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D5>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<5>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<5>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D6>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D6>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<6>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<6>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D7>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D7>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<7>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<7>, size)
                 });
-                group.bench_function(BenchmarkId::new("DaryHeap<D8>", i), |b| {
-                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<D8>, size)
+                group.bench_function(BenchmarkId::new("DaryHeap<8>", i), |b| {
+                    b.iter_batched(|| $data(random_data(base), i), $dary_fn::<8>, size)
                 });
             }
         }

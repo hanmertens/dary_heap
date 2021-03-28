@@ -1,12 +1,12 @@
 #![no_main]
-use dary_heap::{arity, Arity, DaryHeap, D2, D3, D4, D5, D6, D7, D8};
+use dary_heap::DaryHeap;
 use libfuzzer_sys::fuzz_target;
 
 fn to_u16_slice(data: &[u8]) -> &[u16] {
     unsafe { data.align_to().1 }
 }
 
-fn heap<D: Arity>(data: &[u16]) -> DaryHeap<u16, D> {
+fn heap<const D: usize>(data: &[u16]) -> DaryHeap<u16, D> {
     DaryHeap::<_, D>::from(Vec::from(data))
 }
 
@@ -16,7 +16,7 @@ fn sorted(data: &[u16]) -> Vec<u16> {
     sort_data
 }
 
-fn peek_mut<D: Arity>(data: &[u16]) {
+fn peek_mut<const D: usize>(data: &[u16]) {
     if let Some((&first, data)) = data.split_first() {
         let mut heap = heap::<D>(data);
         if let Some(mut peek) = heap.peek_mut() {
@@ -26,7 +26,7 @@ fn peek_mut<D: Arity>(data: &[u16]) {
     }
 }
 
-fn pop<D: Arity>(data: &[u16]) {
+fn pop<const D: usize>(data: &[u16]) {
     let mut heap = heap::<D>(data);
     let sort_data = sorted(data);
     assert_eq!(sort_data.len(), heap.len());
@@ -37,7 +37,7 @@ fn pop<D: Arity>(data: &[u16]) {
     assert_eq!(heap.pop(), None);
 }
 
-fn push<D: Arity>(data: &[u16]) {
+fn push<const D: usize>(data: &[u16]) {
     let mut heap = DaryHeap::<_, D>::with_capacity(data.len());
     for &x in data {
         heap.push(x);
@@ -45,14 +45,14 @@ fn push<D: Arity>(data: &[u16]) {
     }
 }
 
-fn into_sorted_vec<D: Arity>(data: &[u16]) {
+fn into_sorted_vec<const D: usize>(data: &[u16]) {
     let heap = heap::<D>(data);
     let sort_data = sorted(data);
     let sorted = heap.into_sorted_vec();
     assert_eq!(sorted, sort_data);
 }
 
-fn append<D: Arity>(data: &[u16]) {
+fn append<const D: usize>(data: &[u16]) {
     if let Some((&first, data)) = data.split_first() {
         let first = first as usize;
         if first > data.len() {
@@ -68,13 +68,13 @@ fn append<D: Arity>(data: &[u16]) {
     }
 }
 
-fn make_heap<D: Arity>(data: &[u16]) {
+fn make_heap<const D: usize>(data: &[u16]) {
     let heap = heap::<D>(data);
     heap.assert_valid_state();
 }
 
 macro_rules! fuzz_match {
-    ($first:expr, $start:expr, $arity:ident, $data:expr) => {
+    ($first:expr, $start:expr, $arity:expr, $data:expr) => {
         match $first.wrapping_sub($start) {
             0 => peek_mut::<$arity>($data),
             1 => pop::<$arity>($data),
@@ -87,18 +87,16 @@ macro_rules! fuzz_match {
     };
 }
 
-arity! { D1 = 1; }
-
 fuzz_target!(|data: &[u8]| {
     if let Some((first, data)) = data.split_first() {
         let data = to_u16_slice(data);
-        fuzz_match!(first, 0, D1, data);
-        fuzz_match!(first, 32, D2, data);
-        fuzz_match!(first, 64, D3, data);
-        fuzz_match!(first, 96, D4, data);
-        fuzz_match!(first, 128, D5, data);
-        fuzz_match!(first, 160, D6, data);
-        fuzz_match!(first, 192, D7, data);
-        fuzz_match!(first, 224, D8, data);
+        fuzz_match!(first, 0, 1, data);
+        fuzz_match!(first, 32, 2, data);
+        fuzz_match!(first, 64, 3, data);
+        fuzz_match!(first, 96, 4, data);
+        fuzz_match!(first, 128, 5, data);
+        fuzz_match!(first, 160, 6, data);
+        fuzz_match!(first, 192, 7, data);
+        fuzz_match!(first, 224, 8, data);
     }
 });

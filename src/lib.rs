@@ -59,10 +59,10 @@
 //! The difference in ergonomics illustrated in the following:
 //!
 //! ```
-//! use dary_heap::{DaryHeap, D3, TernaryHeap};
+//! use dary_heap::{DaryHeap, TernaryHeap};
 //!
 //! // Type parameter T can be inferred, but arity cannot
-//! let mut heap1 = DaryHeap::<_, D3>::new();
+//! let mut heap1 = DaryHeap::<_, 3>::new();
 //! heap1.push(42);
 //!
 //! // Type alias removes need for explicit type
@@ -70,16 +70,18 @@
 //! heap2.push(42);
 //! ```
 //!
-//! If a different arity is desired, you can use the [`arity`] macro or
-//! implement the  necessary trait [`Arity`] yourself. It should be noted that
-//! *d* > 8 is rarely beneficial.
+//! If a different arity is desired, you can use the former or a define a type
+//! alias yourself. It should be noted that *d* > 8 is rarely beneficial.
 //!
-//! ```
-//! use dary_heap::{arity, DaryHeap};
+//! ## Validity of arities in *d*-ary heaps
 //!
-//! arity! { pub(crate) D9 = 9; }
-//! pub(crate) type NovenaryHeap<T> = DaryHeap<T, D9>;
-//! ```
+//! Only arities of two or greater are useful in *d*-ary heap, and are therefore
+//! the only ones implemented by default. Lower arities are only possible if you
+//! put in the effort to implement them yourself. An arity of one is possible,
+//! but yields a heap where every element has one child. This essentially makes
+//! it a sorted vector with poor performance. Regarding an arity of zero: this
+//! is not statically prevented, but constructing a [`DaryHeap`] with it and
+//! using it may (and probably will) result in a runtime panic.
 //!
 //! [`DaryHeap`]: struct.DaryHeap.html
 //! [`BinaryHeap`]: type.BinaryHeap.html
@@ -89,8 +91,6 @@
 //! [`SenaryHeap`]: type.SenaryHeap.html
 //! [`SeptenaryHeap`]: type.SeptenaryHeap.html
 //! [`OctonaryHeap`]: type.OctonaryHeap.html
-//! [`arity`]: macro.arity.html
-//! [`Arity`]: trait.Arity.html
 //!
 //! # Examples
 //!
@@ -245,7 +245,6 @@ extern crate alloc;
 
 use core::fmt;
 use core::iter::{FromIterator, FusedIterator};
-use core::marker::PhantomData;
 use core::mem::{size_of, swap, ManuallyDrop};
 use core::ops::{Deref, DerefMut};
 use core::ptr;
@@ -256,133 +255,26 @@ use alloc::{vec, vec::Vec};
 #[cfg(not(has_alloc))]
 use std::{vec, vec::Vec};
 
-/// Marker to specify arity *d* in a *d*-ary heap.
-///
-/// # Validity of arities in *d*-ary heaps
-///
-/// Only arities of two or greater are useful in *d*-ary heap, and are therefore
-/// the only ones implemented by default. Lower arities are only possible if you
-/// put in the effort to implement them yourself. An arity of one is possible,
-/// but yields a heap where every element has one child. This essentially makes
-/// it a sorted vector with poor performance. Regarding an arity of zero: this
-/// is not statically prevented, but constructing a [`DaryHeap`] with it and
-/// using it may (and probably will) result in a runtime panic.
-///
-/// [`DaryHeap`]: struct.DaryHeap.html
-pub trait Arity {
-    /// The value of *d*.
-    const D: usize;
-}
-
-/// Convenience macro to implement `Arity` for a specific number.
-///
-/// This macro implements [`Arity`] for an unconstructable enum. It is a
-/// shorthand such that `A` and `B` are equivalent in the following:
-///
-/// ```
-/// use dary_heap::{arity, Arity};
-///
-/// arity! { pub A = 3; }
-///
-/// pub enum B {}
-///
-/// impl Arity for B {
-///     const D: usize = 3;
-/// }
-/// ```
-///
-/// # Examples
-///
-/// ```
-/// use dary_heap::{arity, DaryHeap};
-///
-/// arity! { pub D9 = 9; }
-/// pub type NovenaryHeap<T> = DaryHeap<T, D9>;
-///
-/// arity! {
-///     /// For a denary heap
-///     D10 = 10;
-///     /// For an undenary heap
-///     pub(crate) D11 = 11;
-/// }
-/// type DenaryHeap<T> = DaryHeap<T, D10>;
-/// pub(crate) type UndenaryHeap<T> = DaryHeap<T, D11>;
-/// ```
-///
-/// This macro protects against setting the arity to zero as [`DaryHeap`] cannot
-/// be used with such an arity. See [the relevant section of the `Arity`
-/// trait][validity] for more information.
-///
-/// ```compile_fail
-/// use dary_heap::{arity, DaryHeap};
-///
-/// arity! { D0 = 0; }
-///
-/// let heap = DaryHeap::<_, D0>::from(vec![42]);
-/// ```
-///
-/// [`Arity`]: trait.Arity.html
-/// [`DaryHeap`]: struct.DaryHeap.html
-/// [validity]: trait.Arity.html#validity-of-arities-in-d-ary-heaps
-#[macro_export]
-macro_rules! arity {
-    ($(#[$attr:meta])* $vis:vis $arity:ident = $num:expr; $($t:tt)*) => {
-        $(#[$attr])*
-        $vis enum $arity {}
-
-        impl $crate::Arity for $arity {
-            #[deny(arithmetic_overflow)]
-            const D: usize = $num - 1 + 1; // Arity should be greater than zero
-        }
-
-        $crate::arity!($($t)*);
-    };
-    () => {}
-}
-
-arity! {
-    /// Marker for arity *d* = 2.
-    pub D2 = 2;
-
-    /// Marker for arity *d* = 3.
-    pub D3 = 3;
-
-    /// Marker for arity *d* = 4.
-    pub D4 = 4;
-
-    /// Marker for arity *d* = 5.
-    pub D5 = 5;
-
-    /// Marker for arity *d* = 6.
-    pub D6 = 6;
-
-    /// Marker for arity *d* = 7.
-    pub D7 = 7;
-
-    /// Marker for arity *d* = 8.
-    pub D8 = 8;
-}
-
 /// A binary heap (*d* = 2).
-pub type BinaryHeap<T> = DaryHeap<T, D2>;
+pub type BinaryHeap<T> = DaryHeap<T, 2>;
 
 /// A ternary heap (*d* = 3).
-pub type TernaryHeap<T> = DaryHeap<T, D3>;
+pub type TernaryHeap<T> = DaryHeap<T, 3>;
 
 /// A quaternary heap (*d* = 4).
-pub type QuaternaryHeap<T> = DaryHeap<T, D4>;
+pub type QuaternaryHeap<T> = DaryHeap<T, 4>;
 
 /// A quinary heap (*d* = 5).
-pub type QuinaryHeap<T> = DaryHeap<T, D5>;
+pub type QuinaryHeap<T> = DaryHeap<T, 5>;
 
 /// A senary heap (*d* = 6).
-pub type SenaryHeap<T> = DaryHeap<T, D6>;
+pub type SenaryHeap<T> = DaryHeap<T, 6>;
 
 /// A septenary heap (*d* = 7).
-pub type SeptenaryHeap<T> = DaryHeap<T, D7>;
+pub type SeptenaryHeap<T> = DaryHeap<T, 7>;
 
 /// An octonary heap (*d* = 8).
-pub type OctonaryHeap<T> = DaryHeap<T, D8>;
+pub type OctonaryHeap<T> = DaryHeap<T, 8>;
 
 /// A priority queue implemented with a *d*-ary heap.
 ///
@@ -494,17 +386,16 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// [pop]: DaryHeap::pop
 /// [peek]: DaryHeap::peek
 /// [peek\_mut]: DaryHeap::peek_mut
-pub struct DaryHeap<T, D: Arity> {
+pub struct DaryHeap<T, const D: usize> {
     data: Vec<T>,
-    marker: PhantomData<D>,
 }
 
 #[cfg(feature = "serde")]
 mod serde_impl {
-    use super::{Arity, DaryHeap, Vec};
+    use super::{DaryHeap, Vec};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    impl<T: Serialize, D: Arity> Serialize for DaryHeap<T, D> {
+    impl<T: Serialize, const D: usize> Serialize for DaryHeap<T, D> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
@@ -513,7 +404,7 @@ mod serde_impl {
         }
     }
 
-    impl<'de, T: Ord + Deserialize<'de>, A: Arity> Deserialize<'de> for DaryHeap<T, A> {
+    impl<'de, T: Ord + Deserialize<'de>, const A: usize> Deserialize<'de> for DaryHeap<T, A> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: Deserializer<'de>,
@@ -540,18 +431,18 @@ mod serde_impl {
 /// its documentation for more.
 ///
 /// [`peek_mut`]: DaryHeap::peek_mut
-pub struct PeekMut<'a, T: 'a + Ord, D: Arity> {
+pub struct PeekMut<'a, T: 'a + Ord, const D: usize> {
     heap: &'a mut DaryHeap<T, D>,
     sift: bool,
 }
 
-impl<T: Ord + fmt::Debug, D: Arity> fmt::Debug for PeekMut<'_, T, D> {
+impl<T: Ord + fmt::Debug, const D: usize> fmt::Debug for PeekMut<'_, T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("PeekMut").field(&self.heap.data[0]).finish()
     }
 }
 
-impl<T: Ord, D: Arity> Drop for PeekMut<'_, T, D> {
+impl<T: Ord, const D: usize> Drop for PeekMut<'_, T, D> {
     fn drop(&mut self) {
         if self.sift {
             self.heap.sift_down(0);
@@ -559,7 +450,7 @@ impl<T: Ord, D: Arity> Drop for PeekMut<'_, T, D> {
     }
 }
 
-impl<T: Ord, D: Arity> Deref for PeekMut<'_, T, D> {
+impl<T: Ord, const D: usize> Deref for PeekMut<'_, T, D> {
     type Target = T;
     fn deref(&self) -> &T {
         debug_assert!(!self.heap.is_empty());
@@ -568,7 +459,7 @@ impl<T: Ord, D: Arity> Deref for PeekMut<'_, T, D> {
     }
 }
 
-impl<T: Ord, D: Arity> DerefMut for PeekMut<'_, T, D> {
+impl<T: Ord, const D: usize> DerefMut for PeekMut<'_, T, D> {
     fn deref_mut(&mut self) -> &mut T {
         debug_assert!(!self.heap.is_empty());
         self.sift = true;
@@ -577,7 +468,7 @@ impl<T: Ord, D: Arity> DerefMut for PeekMut<'_, T, D> {
     }
 }
 
-impl<'a, T: Ord, D: Arity> PeekMut<'a, T, D> {
+impl<'a, T: Ord, const D: usize> PeekMut<'a, T, D> {
     /// Removes the peeked value from the heap and returns it.
     pub fn pop(mut this: PeekMut<'a, T, D>) -> T {
         let value = this.heap.pop().unwrap();
@@ -586,11 +477,10 @@ impl<'a, T: Ord, D: Arity> PeekMut<'a, T, D> {
     }
 }
 
-impl<T: Clone, D: Arity> Clone for DaryHeap<T, D> {
+impl<T: Clone, const D: usize> Clone for DaryHeap<T, D> {
     fn clone(&self) -> Self {
         DaryHeap {
             data: self.data.clone(),
-            marker: PhantomData,
         }
     }
 
@@ -599,7 +489,7 @@ impl<T: Clone, D: Arity> Clone for DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, D: Arity> Default for DaryHeap<T, D> {
+impl<T: Ord, const D: usize> Default for DaryHeap<T, D> {
     /// Creates an empty `DaryHeap<T, D>`.
     #[inline]
     fn default() -> DaryHeap<T, D> {
@@ -607,13 +497,13 @@ impl<T: Ord, D: Arity> Default for DaryHeap<T, D> {
     }
 }
 
-impl<T: fmt::Debug, D: Arity> fmt::Debug for DaryHeap<T, D> {
+impl<T: fmt::Debug, const D: usize> fmt::Debug for DaryHeap<T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
     }
 }
 
-impl<T: Ord, D: Arity> DaryHeap<T, D> {
+impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// Creates an empty `DaryHeap` as a max-heap.
     ///
     /// # Examples
@@ -626,10 +516,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// heap.push(4);
     /// ```
     pub fn new() -> DaryHeap<T, D> {
-        DaryHeap {
-            data: vec![],
-            marker: PhantomData,
-        }
+        DaryHeap { data: vec![] }
     }
 
     /// Creates an empty `DaryHeap` with a specific capacity.
@@ -649,7 +536,6 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     pub fn with_capacity(capacity: usize) -> DaryHeap<T, D> {
         DaryHeap {
             data: Vec::with_capacity(capacity),
-            marker: PhantomData,
         }
     }
 
@@ -803,13 +689,13 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     // Using a hole reduces the constant factor compared to using swaps,
     // which involves twice as many moves.
     fn sift_up(&mut self, start: usize, pos: usize) -> usize {
-        assert_ne!(D::D, 0, "Arity should be greater than zero");
+        assert_ne!(D, 0, "Arity should be greater than zero");
         unsafe {
             // Take out the value at `pos` and create a hole.
             let mut hole = Hole::new(&mut self.data, pos);
 
             while hole.pos() > start {
-                let parent = (hole.pos() - 1) / D::D;
+                let parent = (hole.pos() - 1) / D;
                 if hole.element() <= hole.get(parent) {
                     break;
                 }
@@ -822,11 +708,11 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// Take an element at `pos` and move it down the heap,
     /// while its children are larger.
     fn sift_down_range(&mut self, pos: usize, end: usize) {
-        assert_ne!(D::D, 0, "Arity should be greater than zero");
+        assert_ne!(D, 0, "Arity should be greater than zero");
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
-            let mut child = D::D * pos + 1;
-            while child <= end.saturating_sub(D::D) {
+            let mut child = D * pos + 1;
+            while child <= end.saturating_sub(D) {
                 // compare with the greatest of the d children
                 child = hole.max_sibling::<D>(child);
                 // if we are already in order, stop.
@@ -834,7 +720,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
                     return;
                 }
                 hole.move_to(child);
-                child = D::D * hole.pos() + 1;
+                child = D * hole.pos() + 1;
             }
             child = hole.max_sibling_to::<D>(child, end);
             if child < end && hole.element() < hole.get(child) {
@@ -854,17 +740,17 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// Note: This is faster when the element is known to be large / should
     /// be closer to the bottom.
     fn sift_down_to_bottom(&mut self, mut pos: usize) {
-        assert_ne!(D::D, 0, "Arity should be greater than zero");
+        assert_ne!(D, 0, "Arity should be greater than zero");
         let end = self.len();
         let start = pos;
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
-            let mut child = D::D * pos + 1;
-            while child <= end.saturating_sub(D::D) {
+            let mut child = D * pos + 1;
+            while child <= end.saturating_sub(D) {
                 // compare with the greatest of the d children
                 child = hole.max_sibling::<D>(child);
                 hole.move_to(child);
-                child = D::D * hole.pos() + 1;
+                child = D * hole.pos() + 1;
             }
             child = hole.max_sibling_to::<D>(child, end);
             if child < end {
@@ -876,11 +762,11 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     }
 
     fn rebuild(&mut self) {
-        assert_ne!(D::D, 0, "Arity should be greater than zero");
+        assert_ne!(D, 0, "Arity should be greater than zero");
         if self.len() < 2 {
             return;
         }
-        let mut n = (self.len() - 1) / D::D + 1;
+        let mut n = (self.len() - 1) / D + 1;
         while n > 0 {
             n -= 1;
             self.sift_down(n);
@@ -929,13 +815,13 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         // assuming len1 >= len2. For larger heaps, the crossover point
         // no longer follows this reasoning and was determined empirically.
         #[inline]
-        fn better_to_rebuild<D: Arity>(len1: usize, len2: usize) -> bool {
-            assert_ne!(D::D, 0, "Arity should be greater than zero");
+        fn better_to_rebuild<const D: usize>(len1: usize, len2: usize) -> bool {
+            assert_ne!(D, 0, "Arity should be greater than zero");
             let tot_len = len1 + len2;
-            if tot_len <= 4096 / D::D {
-                D::D * tot_len < (D::D - 1) * len2 * log2_fast(len1)
+            if tot_len <= 4096 / D {
+                D * tot_len < (D - 1) * len2 * log2_fast(len1)
             } else {
-                D::D * tot_len < (D::D - 1) * len2 * (13 - D::D)
+                D * tot_len < (D - 1) * len2 * (13 - D)
             }
         }
 
@@ -1004,7 +890,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     }
 }
 
-impl<T, D: Arity> DaryHeap<T, D> {
+impl<T, const D: usize> DaryHeap<T, D> {
     /// Returns an iterator visiting all values in the underlying vector, in
     /// arbitrary order.
     ///
@@ -1369,24 +1255,24 @@ impl<'a, T: Ord> Hole<'a, T> {
     /// Unsafe because all siblings must be within the data slice and not equal
     /// to pos.
     #[inline]
-    unsafe fn max_sibling<D: Arity>(&self, first_sibling: usize) -> usize {
+    unsafe fn max_sibling<const D: usize>(&self, first_sibling: usize) -> usize {
         let mut sibling = first_sibling;
-        match D::D {
+        match D {
             2 => {
                 sibling += (self.get(sibling) <= self.get(sibling + 1)) as usize;
             }
             3 => {
-                let sibling_a = self.max_sibling::<D2>(sibling);
+                let sibling_a = self.max_sibling::<2>(sibling);
                 let sibling_b = sibling + 2;
                 sibling = self.max(sibling_a, sibling_b);
             }
             4 => {
-                let sibling_a = self.max_sibling::<D2>(sibling);
-                let sibling_b = self.max_sibling::<D2>(sibling + 2);
+                let sibling_a = self.max_sibling::<2>(sibling);
+                let sibling_b = self.max_sibling::<2>(sibling + 2);
                 sibling = self.max(sibling_a, sibling_b);
             }
             _ => {
-                for other_sibling in sibling + 1..sibling + D::D {
+                for other_sibling in sibling + 1..sibling + D {
                     if self.get(sibling) <= self.get(other_sibling) {
                         sibling = other_sibling;
                     }
@@ -1402,13 +1288,13 @@ impl<'a, T: Ord> Hole<'a, T> {
     /// must be outside of the data slice and no sibling may be equal to pos.
     /// It is allowed for first_sibling to be outside of the data slice.
     #[inline]
-    unsafe fn max_sibling_to<D: Arity>(&self, first_sibling: usize, end: usize) -> usize {
+    unsafe fn max_sibling_to<const D: usize>(&self, first_sibling: usize, end: usize) -> usize {
         let mut sibling = first_sibling;
-        match D::D {
+        match D {
             2 => {}
             3 => {
                 if sibling + 1 < end {
-                    sibling = self.max_sibling::<D2>(sibling);
+                    sibling = self.max_sibling::<2>(sibling);
                 }
             }
             _ => {
@@ -1558,12 +1444,12 @@ unsafe impl<I> core::iter::InPlaceIterable for IntoIter<I> {}
 
 #[cfg(feature = "unstable")]
 #[derive(Clone, Debug)]
-pub struct IntoIterSorted<T, D: Arity> {
+pub struct IntoIterSorted<T, const D: usize> {
     inner: DaryHeap<T, D>,
 }
 
 #[cfg(feature = "unstable")]
-impl<T: Ord, D: Arity> Iterator for IntoIterSorted<T, D> {
+impl<T: Ord, const D: usize> Iterator for IntoIterSorted<T, D> {
     type Item = T;
 
     #[inline]
@@ -1579,13 +1465,13 @@ impl<T: Ord, D: Arity> Iterator for IntoIterSorted<T, D> {
 }
 
 #[cfg(feature = "unstable")]
-impl<T: Ord, D: Arity> ExactSizeIterator for IntoIterSorted<T, D> {}
+impl<T: Ord, const D: usize> ExactSizeIterator for IntoIterSorted<T, D> {}
 
 #[cfg(feature = "unstable")]
-impl<T: Ord, D: Arity> FusedIterator for IntoIterSorted<T, D> {}
+impl<T: Ord, const D: usize> FusedIterator for IntoIterSorted<T, D> {}
 
 #[cfg(all(feature = "unstable", feature = "unstable_nightly"))]
-unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for IntoIterSorted<T, D> {}
+unsafe impl<T: Ord, const D: usize> core::iter::TrustedLen for IntoIterSorted<T, D> {}
 
 /// A draining iterator over the elements of a `DaryHeap`.
 ///
@@ -1636,19 +1522,19 @@ impl<T> FusedIterator for Drain<'_, T> {}
 /// [`drain_sorted`]: DaryHeap::drain_sorted
 #[cfg(feature = "unstable")]
 #[derive(Debug)]
-pub struct DrainSorted<'a, T: Ord, D: Arity> {
+pub struct DrainSorted<'a, T: Ord, const D: usize> {
     inner: &'a mut DaryHeap<T, D>,
 }
 
 #[cfg(feature = "unstable")]
-impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
+impl<'a, T: Ord, const D: usize> Drop for DrainSorted<'a, T, D> {
     /// Removes heap elements in heap order.
     fn drop(&mut self) {
         use core::mem::forget;
 
-        struct DropGuard<'r, 'a, T: Ord, D: Arity>(&'r mut DrainSorted<'a, T, D>);
+        struct DropGuard<'r, 'a, T: Ord, const D: usize>(&'r mut DrainSorted<'a, T, D>);
 
-        impl<'r, 'a, T: Ord, D: Arity> Drop for DropGuard<'r, 'a, T, D> {
+        impl<'r, 'a, T: Ord, const D: usize> Drop for DropGuard<'r, 'a, T, D> {
             fn drop(&mut self) {
                 while self.0.inner.pop().is_some() {}
             }
@@ -1663,7 +1549,7 @@ impl<'a, T: Ord, D: Arity> Drop for DrainSorted<'a, T, D> {
 }
 
 #[cfg(feature = "unstable")]
-impl<T: Ord, D: Arity> Iterator for DrainSorted<'_, T, D> {
+impl<T: Ord, const D: usize> Iterator for DrainSorted<'_, T, D> {
     type Item = T;
 
     #[inline]
@@ -1679,23 +1565,20 @@ impl<T: Ord, D: Arity> Iterator for DrainSorted<'_, T, D> {
 }
 
 #[cfg(feature = "unstable")]
-impl<T: Ord, D: Arity> ExactSizeIterator for DrainSorted<'_, T, D> {}
+impl<T: Ord, const D: usize> ExactSizeIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(feature = "unstable")]
-impl<T: Ord, D: Arity> FusedIterator for DrainSorted<'_, T, D> {}
+impl<T: Ord, const D: usize> FusedIterator for DrainSorted<'_, T, D> {}
 
 #[cfg(all(feature = "unstable", feature = "unstable_nightly"))]
-unsafe impl<T: Ord, D: Arity> core::iter::TrustedLen for DrainSorted<'_, T, D> {}
+unsafe impl<T: Ord, const D: usize> core::iter::TrustedLen for DrainSorted<'_, T, D> {}
 
-impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
+impl<T: Ord, const D: usize> From<Vec<T>> for DaryHeap<T, D> {
     /// Converts a `Vec<T>` into a `DaryHeap<T, D>`.
     ///
     /// This conversion happens in-place, and has *O*(*n*) time complexity.
     fn from(vec: Vec<T>) -> DaryHeap<T, D> {
-        let mut heap = DaryHeap {
-            data: vec,
-            marker: PhantomData,
-        };
+        let mut heap = DaryHeap { data: vec };
         heap.rebuild();
         heap
     }
@@ -1705,7 +1588,7 @@ impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
 /// # Compatibility
 /// This trait is only implemented on Rust version 1.41.0 or greater. On earlier
 /// versions `Into<Vec<T>>` is implemented for `DaryHeap<T, D>` instead.
-impl<T, D: Arity> From<DaryHeap<T, D>> for Vec<T> {
+impl<T, const D: usize> From<DaryHeap<T, D>> for Vec<T> {
     /// Converts a `DaryHeap<T, D>` into a `Vec<T>`.
     ///
     /// This conversion requires no data movement or allocation, and has
@@ -1716,19 +1599,19 @@ impl<T, D: Arity> From<DaryHeap<T, D>> for Vec<T> {
 }
 
 #[cfg(not(rustc_1_41))]
-impl<T, D: Arity> Into<Vec<T>> for DaryHeap<T, D> {
+impl<T, const D: usize> Into<Vec<T>> for DaryHeap<T, D> {
     fn into(self) -> Vec<T> {
         self.data
     }
 }
 
-impl<T: Ord, D: Arity> FromIterator<T> for DaryHeap<T, D> {
+impl<T: Ord, const D: usize> FromIterator<T> for DaryHeap<T, D> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> DaryHeap<T, D> {
         DaryHeap::from(iter.into_iter().collect::<Vec<_>>())
     }
 }
 
-impl<T, D: Arity> IntoIterator for DaryHeap<T, D> {
+impl<T, const D: usize> IntoIterator for DaryHeap<T, D> {
     type Item = T;
     type IntoIter = IntoIter<T>;
 
@@ -1757,7 +1640,7 @@ impl<T, D: Arity> IntoIterator for DaryHeap<T, D> {
     }
 }
 
-impl<'a, T, D: Arity> IntoIterator for &'a DaryHeap<T, D> {
+impl<'a, T, const D: usize> IntoIterator for &'a DaryHeap<T, D> {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
@@ -1766,7 +1649,7 @@ impl<'a, T, D: Arity> IntoIterator for &'a DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, D: Arity> Extend<T> for DaryHeap<T, D> {
+impl<T: Ord, const D: usize> Extend<T> for DaryHeap<T, D> {
     #[inline]
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         self.extend_desugared(iter.into_iter());
@@ -1785,7 +1668,7 @@ impl<T: Ord, D: Arity> Extend<T> for DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, D: Arity> DaryHeap<T, D> {
+impl<T: Ord, const D: usize> DaryHeap<T, D> {
     fn extend_desugared<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         let iterator = iter.into_iter();
         let (lower, _) = iterator.size_hint();
@@ -1796,7 +1679,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     }
 }
 
-impl<'a, T: 'a + Ord + Copy, D: Arity> Extend<&'a T> for DaryHeap<T, D> {
+impl<'a, T: 'a + Ord + Copy, const D: usize> Extend<&'a T> for DaryHeap<T, D> {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
     }
@@ -1815,13 +1698,13 @@ impl<'a, T: 'a + Ord + Copy, D: Arity> Extend<&'a T> for DaryHeap<T, D> {
 }
 
 #[cfg(any(test, fuzzing))]
-impl<T: Ord + fmt::Debug, D: Arity> DaryHeap<T, D> {
+impl<T: Ord + fmt::Debug, const D: usize> DaryHeap<T, D> {
     /// Panics if the heap is in an inconsistent state
     #[track_caller]
     pub fn assert_valid_state(&self) {
-        assert_ne!(D::D, 0, "Arity should be greater than zero");
+        assert_ne!(D, 0, "Arity should be greater than zero");
         for (i, v) in self.iter().enumerate() {
-            let children = D::D * i + 1..D::D * i + D::D;
+            let children = D * i + 1..D * i + D;
             if children.start > self.len() {
                 break;
             }
@@ -1839,7 +1722,7 @@ mod tests {
     use super::*;
     use rand::{seq::SliceRandom, thread_rng};
 
-    fn pop<D: Arity>() {
+    fn pop<const D: usize>() {
         let mut rng = thread_rng();
         let ntest = if cfg!(miri) { 1 } else { 10 };
         let nelem = if cfg!(miri) { 100 } else { 1000 };
@@ -1856,64 +1739,57 @@ mod tests {
         }
     }
 
-    enum D0 {}
-
-    impl Arity for D0 {
-        const D: usize = 0;
-    }
-
     #[test]
     #[should_panic]
     fn push_d0() {
-        let mut heap = DaryHeap::<_, D0>::new();
+        let mut heap = DaryHeap::<_, 0>::new();
         heap.push(42);
     }
 
     #[test]
     #[should_panic]
     fn from_vec_d0() {
-        let _heap = DaryHeap::<_, D0>::from(vec![42]);
+        let _heap = DaryHeap::<_, 0>::from(vec![42]);
     }
 
     #[test]
     fn pop_d1() {
-        arity! { D1 = 1; }
-        pop::<D1>();
+        pop::<1>();
     }
 
     #[test]
     fn pop_d2() {
-        pop::<D2>();
+        pop::<2>();
     }
 
     #[test]
     fn pop_d3() {
-        pop::<D3>();
+        pop::<3>();
     }
 
     #[test]
     fn pop_d4() {
-        pop::<D4>();
+        pop::<4>();
     }
 
     #[test]
     fn pop_d5() {
-        pop::<D5>();
+        pop::<5>();
     }
 
     #[test]
     fn pop_d6() {
-        pop::<D6>();
+        pop::<6>();
     }
 
     #[test]
     fn pop_d7() {
-        pop::<D7>();
+        pop::<7>();
     }
 
     #[test]
     fn pop_d8() {
-        pop::<D8>();
+        pop::<8>();
     }
 
     #[test]
@@ -1921,7 +1797,7 @@ mod tests {
     fn serde() {
         use serde_test::Token::{Seq, SeqEnd, I32};
 
-        impl<T: PartialEq, D: Arity> PartialEq for DaryHeap<T, D> {
+        impl<T: PartialEq, const D: usize> PartialEq for DaryHeap<T, D> {
             fn eq(&self, other: &Self) -> bool {
                 self.iter().zip(other).all(|(a, b)| a == b)
             }
