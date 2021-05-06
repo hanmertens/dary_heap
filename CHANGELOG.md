@@ -9,6 +9,8 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+### Changed
+- Synchronize source code with standard library of Rust version 1.52.0.
 
 ## [0.2.3] &ndash; 2021-03-27
 ### Changed

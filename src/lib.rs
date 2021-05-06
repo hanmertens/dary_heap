@@ -554,7 +554,8 @@ impl<T: Ord + fmt::Debug, D: Arity> fmt::Debug for PeekMut<'_, T, D> {
 impl<T: Ord, D: Arity> Drop for PeekMut<'_, T, D> {
     fn drop(&mut self) {
         if self.sift {
-            self.heap.sift_down(0);
+            // SAFETY: PeekMut is only instantiated for non-empty heaps.
+            unsafe { self.heap.sift_down(0) };
         }
     }
 }
@@ -716,7 +717,8 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         self.data.pop().map(|mut item| {
             if !self.is_empty() {
                 swap(&mut item, &mut self.data[0]);
-                self.sift_down_to_bottom(0);
+                // SAFETY: !self.is_empty() means that self.len() > 0
+                unsafe { self.sift_down_to_bottom(0) };
             }
             item
         })
@@ -757,7 +759,9 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     pub fn push(&mut self, item: T) {
         let old_len = self.len();
         self.data.push(item);
-        self.sift_up(0, old_len);
+        // SAFETY: Since we pushed a new item it means that
+        //  old_len = self.len() - 1 < self.len()
+        unsafe { self.sift_up(0, old_len) };
     }
 
     /// Consumes the `DaryHeap` and returns a vector in sorted
@@ -789,7 +793,10 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
                 let ptr = self.data.as_mut_ptr();
                 ptr::swap(ptr, ptr.add(end));
             }
-            self.sift_down_range(0, end);
+            // SAFETY: `end` goes from `self.len() - 1` to 1 (both included) so:
+            //  0 < 1 <= end <= self.len() - 1 < self.len()
+            //  Which means 0 < end and end < self.len().
+            unsafe { self.sift_down_range(0, end) };
         }
         self.into_vec()
     }
@@ -802,49 +809,83 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     // the hole is filled back at the end of its scope, even on panic.
     // Using a hole reduces the constant factor compared to using swaps,
     // which involves twice as many moves.
-    fn sift_up(&mut self, start: usize, pos: usize) -> usize {
-        assert_ne!(D::D, 0, "Arity should be greater than zero");
-        unsafe {
-            // Take out the value at `pos` and create a hole.
-            let mut hole = Hole::new(&mut self.data, pos);
 
-            while hole.pos() > start {
-                let parent = (hole.pos() - 1) / D::D;
-                if hole.element() <= hole.get(parent) {
-                    break;
-                }
-                hole.move_to(parent);
+    /// # Safety
+    ///
+    /// The caller must guarantee that `pos < self.len()`.
+    unsafe fn sift_up(&mut self, start: usize, pos: usize) -> usize {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
+        // Take out the value at `pos` and create a hole.
+        // SAFETY: The caller guarantees that pos < self.len()
+        let mut hole = Hole::new(&mut self.data, pos);
+
+        while hole.pos() > start {
+            let parent = (hole.pos() - 1) / D::D;
+
+            // SAFETY: hole.pos() > start >= 0, which means hole.pos() > 0
+            //  and so hole.pos() - 1 can't underflow.
+            //  This guarantees that parent < hole.pos() so
+            //  it's a valid index and also != hole.pos().
+            if hole.element() <= hole.get(parent) {
+                break;
             }
-            hole.pos()
+
+            // SAFETY: Same as above
+            hole.move_to(parent);
         }
+
+        hole.pos()
     }
 
     /// Take an element at `pos` and move it down the heap,
     /// while its children are larger.
-    fn sift_down_range(&mut self, pos: usize, end: usize) {
+    ///
+    /// # Safety
+    ///
+    /// The caller must guarantee that `pos < end <= self.len()`.
+    unsafe fn sift_down_range(&mut self, pos: usize, end: usize) {
         assert_ne!(D::D, 0, "Arity should be greater than zero");
-        unsafe {
-            let mut hole = Hole::new(&mut self.data, pos);
-            let mut child = D::D * pos + 1;
-            while child <= end.saturating_sub(D::D) {
-                // compare with the greatest of the d children
-                child = hole.max_sibling::<D>(child);
-                // if we are already in order, stop.
-                if hole.element() >= hole.get(child) {
-                    return;
-                }
-                hole.move_to(child);
-                child = D::D * hole.pos() + 1;
+        // SAFETY: The caller guarantees that pos < end <= self.len().
+        let mut hole = Hole::new(&mut self.data, pos);
+        let mut child = D::D * hole.pos() + 1;
+
+        // Loop invariant: child == d * hole.pos() + 1.
+        while child <= end.saturating_sub(D::D) {
+            // compare with the greatest of the d children
+            // SAFETY: child < end - d + 1 < self.len() and
+            //  child + d - 1 < end <= self.len(), so they're valid indexes.
+            //  child + i == d * hole.pos() + 1 + i != hole.pos() for i >= 0
+            child = hole.max_sibling::<D>(child);
+
+            // if we are already in order, stop.
+            // SAFETY: child is now either the old child or valid sibling
+            //  We already proven that all are < self.len() and != hole.pos()
+            if hole.element() >= hole.get(child) {
+                return;
             }
-            child = hole.max_sibling_to::<D>(child, end);
-            if child < end && hole.element() < hole.get(child) {
-                hole.move_to(child);
-            }
+
+            // SAFETY: same as above.
+            hole.move_to(child);
+            child = D::D * hole.pos() + 1;
+        }
+
+        child = hole.max_sibling_to::<D>(child, end);
+        // SAFETY: && short circuit, which means that in the
+        //  second condition it's already true that child < end <= self.len().
+        if child < end && hole.element() < hole.get(child) {
+            // SAFETY: child is already proven to be a valid index and
+            //  child == d * hole.pos() + 1 != hole.pos().
+            hole.move_to(child);
         }
     }
 
-    fn sift_down(&mut self, pos: usize) {
+    /// # Safety
+    ///
+    /// The caller must guarantee that `pos < self.len()`.
+    unsafe fn sift_down(&mut self, pos: usize) {
         let len = self.len();
+        // SAFETY: pos < len is guaranteed by the caller and
+        //  obviously len = self.len() <= self.len().
         self.sift_down_range(pos, len);
     }
 
@@ -853,25 +894,42 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     ///
     /// Note: This is faster when the element is known to be large / should
     /// be closer to the bottom.
-    fn sift_down_to_bottom(&mut self, mut pos: usize) {
+    ///
+    /// # Safety
+    ///
+    /// The caller must guarantee that `pos < self.len()`.
+    unsafe fn sift_down_to_bottom(&mut self, mut pos: usize) {
         assert_ne!(D::D, 0, "Arity should be greater than zero");
         let end = self.len();
         let start = pos;
-        unsafe {
-            let mut hole = Hole::new(&mut self.data, pos);
-            let mut child = D::D * pos + 1;
-            while child <= end.saturating_sub(D::D) {
-                // compare with the greatest of the d children
-                child = hole.max_sibling::<D>(child);
-                hole.move_to(child);
-                child = D::D * hole.pos() + 1;
-            }
-            child = hole.max_sibling_to::<D>(child, end);
-            if child < end {
-                hole.move_to(child);
-            }
-            pos = hole.pos;
+
+        // SAFETY: The caller guarantees that pos < self.len().
+        let mut hole = Hole::new(&mut self.data, pos);
+        let mut child = D::D * hole.pos() + 1;
+
+        // Loop invariant: child == d * hole.pos() + 1.
+        while child <= end.saturating_sub(D::D) {
+            // SAFETY: child < end - d + 1 < self.len() and
+            //  child + d - 1 < end <= self.len(), so they're valid indexes.
+            //  child + i == d * hole.pos() + 1 + i != hole.pos() for i >= 0
+            child = hole.max_sibling::<D>(child);
+
+            // SAFETY: Same as above
+            hole.move_to(child);
+            child = D::D * hole.pos() + 1;
         }
+
+        child = hole.max_sibling_to::<D>(child, end);
+        if child < end {
+            // SAFETY: child < end <= self.len(), so it's a valid index
+            //  and child == d * hole.pos() + i != hole.pos() for i >= 1
+            hole.move_to(child);
+        }
+        pos = hole.pos();
+        drop(hole);
+
+        // SAFETY: pos is the position in the hole and was already proven
+        //  to be a valid index.
         self.sift_up(start, pos);
     }
 
@@ -883,7 +941,10 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         let mut n = (self.len() - 1) / D::D + 1;
         while n > 0 {
             n -= 1;
-            self.sift_down(n);
+            // SAFETY: n starts from (self.len() - 1) / d + 1 and goes down to 0.
+            //  The only case when !(n < self.len()) is if
+            //  self.len() == 0, but it's ruled out by the loop condition.
+            unsafe { self.sift_down(n) };
         }
     }
 
