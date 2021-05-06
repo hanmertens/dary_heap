@@ -314,6 +314,8 @@ pub trait Arity {
 /// trait][validity] for more information.
 ///
 /// ```compile_fail
+/// # #[cfg(miri)]
+/// # let the compilation fail on Miri!
 /// use dary_heap::{arity, DaryHeap};
 ///
 /// arity! { D0 = 0; }
