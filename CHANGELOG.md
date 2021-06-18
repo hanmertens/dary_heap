@@ -6,8 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- New function `DaryHeap::as_slice` when `unstable` feature is enabled.
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.52.0.
+- Synchronize source code with standard library of Rust version 1.53.0.
+- Performance improvement for `DaryHeap::retain`.
 
 ## [0.3.0] &ndash; 2021-03-28
 ### Changed
