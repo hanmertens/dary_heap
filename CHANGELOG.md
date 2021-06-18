@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Synchronize source code with standard library of Rust version 1.53.0.
 - Performance improvement for `DaryHeap::retain`.
 
+### Fixed
+- No integer overflow when rebuilding heaps with arities greater than 13 in
+  `DaryHeap::append`.
+
 ## [0.3.0] &ndash; 2021-03-28
 ### Changed
 - Use const generics to specify arity instead of `Arity` trait.
