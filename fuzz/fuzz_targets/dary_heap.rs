@@ -73,6 +73,18 @@ fn make_heap<D: Arity>(data: &[u16]) {
     heap.assert_valid_state();
 }
 
+fn retain<D: Arity>(data: &[u16]) {
+    if let Some((&first, data)) = data.split_first() {
+        let mut heap = heap::<D>(data);
+        heap.retain(|&x| x != first);
+        heap.assert_valid_state();
+        heap.retain(|&x| x < first);
+        heap.assert_valid_state();
+        heap.retain(|_| false);
+        assert!(heap.is_empty());
+    }
+}
+
 macro_rules! fuzz_match {
     ($first:expr, $start:expr, $arity:ident, $data:expr) => {
         match $first.wrapping_sub($start) {
@@ -82,6 +94,7 @@ macro_rules! fuzz_match {
             3 => into_sorted_vec::<$arity>($data),
             4 => append::<$arity>($data),
             5 => make_heap::<$arity>($data),
+            6 => retain::<$arity>($data),
             _ => {}
         }
     };
