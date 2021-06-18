@@ -9,8 +9,12 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+### Added
+- New function `DaryHeap::as_slice` when `unstable` feature is enabled.
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.52.0.
+- Synchronize source code with standard library of Rust version 1.53.0.
+- Performance improvement for `DaryHeap::retain`.
 
 ## [0.2.3] &ndash; 2021-03-27
 ### Changed

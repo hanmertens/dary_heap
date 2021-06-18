@@ -935,6 +935,46 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         self.sift_up(start, pos);
     }
 
+    /// Rebuild assuming data[0..start] is still a proper heap.
+    fn rebuild_tail(&mut self, start: usize) {
+        assert_ne!(D::D, 0, "Arity should be greater than zero");
+
+        if start == self.len() {
+            return;
+        }
+
+        let tail_len = self.len() - start;
+
+        #[inline(always)]
+        fn log2_fast(x: usize) -> usize {
+            8 * size_of::<usize>() - (x.leading_zeros() as usize) - 1
+        }
+
+        // `rebuild` takes O(self.len()) operations
+        // and about n * self.len() comparisons in the worst case
+        // with n = d / (d - 1)
+        // while repeating `sift_up` takes O(tail_len * log(start)) operations
+        // and about 1 * tail_len * log(start) comparisons in the worst case,
+        // assuming start >= tail_len. For larger heaps, the crossover point
+        // no longer follows this reasoning and was determined empirically.
+        let better_to_rebuild = if start < tail_len {
+            true
+        } else if self.len() <= 4096 / D::D {
+            D::D * self.len() < (D::D - 1) * tail_len * log2_fast(start)
+        } else {
+            D::D * self.len() < (D::D - 1) * tail_len * (13 - D::D)
+        };
+
+        if better_to_rebuild {
+            self.rebuild();
+        } else {
+            for i in start..self.len() {
+                // SAFETY: The index `i` is always less than self.len().
+                unsafe { self.sift_up(0, i) };
+            }
+        }
+    }
+
     fn rebuild(&mut self) {
         assert_ne!(D::D, 0, "Arity should be greater than zero");
         if self.len() < 2 {
@@ -975,39 +1015,11 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
             swap(self, other);
         }
 
-        if other.is_empty() {
-            return;
-        }
+        let start = self.data.len();
 
-        #[inline(always)]
-        fn log2_fast(x: usize) -> usize {
-            8 * size_of::<usize>() - (x.leading_zeros() as usize) - 1
-        }
+        self.data.append(&mut other.data);
 
-        // `rebuild` takes O(len1 + len2) operations
-        // and about n * (len1 + len2) comparisons in the worst case
-        // with n = d / (d - 1)
-        // while `extend` takes O(len2 * log(len1)) operations
-        // and about 1 * len2 * log(len1) comparisons in the worst case,
-        // assuming len1 >= len2. For larger heaps, the crossover point
-        // no longer follows this reasoning and was determined empirically.
-        #[inline]
-        fn better_to_rebuild<D: Arity>(len1: usize, len2: usize) -> bool {
-            assert_ne!(D::D, 0, "Arity should be greater than zero");
-            let tot_len = len1 + len2;
-            if tot_len <= 4096 / D::D {
-                D::D * tot_len < (D::D - 1) * len2 * log2_fast(len1)
-            } else {
-                D::D * tot_len < (D::D - 1) * len2 * (13 - D::D)
-            }
-        }
-
-        if better_to_rebuild::<D>(self.len(), other.len()) {
-            self.data.append(&mut other.data);
-            self.rebuild();
-        } else {
-            self.extend(other.drain());
-        }
+        self.rebuild_tail(start);
     }
 
     /// Returns an iterator which retrieves elements in heap order.
@@ -1058,12 +1070,22 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
     /// ```
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    pub fn retain<F>(&mut self, f: F)
+    pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&T) -> bool,
     {
-        self.data.retain(f);
-        self.rebuild();
+        let mut first_removed = self.len();
+        let mut i = 0;
+        self.data.retain(|e| {
+            let keep = f(e);
+            if !keep && i < first_removed {
+                first_removed = i;
+            }
+            i += 1;
+            keep
+        });
+        // data[0..first_removed] is untouched, so we only need to rebuild the tail:
+        self.rebuild_tail(first_removed);
     }
 }
 
@@ -1241,6 +1263,27 @@ impl<T, D: Arity> DaryHeap<T, D> {
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable_nightly")))]
     pub fn shrink_to(&mut self, min_capacity: usize) {
         self.data.shrink_to(min_capacity)
+    }
+
+    /// Returns a slice of all values in the underlying vector, in arbitrary
+    /// order.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use dary_heap::OctonaryHeap;
+    /// use std::io::{self, Write};
+    ///
+    /// let heap = OctonaryHeap::from(vec![1, 2, 3, 4, 5, 6, 7]);
+    ///
+    /// io::sink().write(heap.as_slice()).unwrap();
+    /// ```
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    pub fn as_slice(&self) -> &[T] {
+        self.data.as_slice()
     }
 
     /// Consumes the `DaryHeap` and returns the underlying vector
