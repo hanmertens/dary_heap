@@ -9,6 +9,8 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+
+## [0.2.4] &ndash; 2021-06-18
 ### Added
 - New function `DaryHeap::as_slice` when `unstable` feature is enabled.
 
@@ -76,7 +78,8 @@ branch](https://github.com/hanmertens/dary_heap).
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.3...non-const-generics
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.4...non-const-generics
+[0.2.4]: https://github.com/hanmertens/dary_heap/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/hanmertens/dary_heap/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/hanmertens/dary_heap/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/hanmertens/dary_heap/compare/v0.2.0...v0.2.1
