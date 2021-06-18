@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+The changelog of 0.2.x releases for x > 3 can be found [on the
+non-const-generics branch](https://github.com/hanmertens/dary_heap/tree/non-const-generics).
+The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
+0.3.y releases that can be used with older Rust compilers without const generics
+support.
+
 ## [Unreleased]
 
 ## [0.3.1] &ndash; 2021-06-18
