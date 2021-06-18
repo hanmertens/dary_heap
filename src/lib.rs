@@ -962,7 +962,7 @@ impl<T: Ord, D: Arity> DaryHeap<T, D> {
         } else if self.len() <= 4096 / D::D {
             D::D * self.len() < (D::D - 1) * tail_len * log2_fast(start)
         } else {
-            D::D * self.len() < (D::D - 1) * tail_len * (13 - D::D)
+            D::D * self.len() < (D::D - 1) * tail_len * 13usize.saturating_sub(D::D)
         };
 
         if better_to_rebuild {

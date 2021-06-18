@@ -16,6 +16,10 @@ branch](https://github.com/hanmertens/dary_heap).
 - Synchronize source code with standard library of Rust version 1.53.0.
 - Performance improvement for `DaryHeap::retain`.
 
+### Fixed
+- No integer overflow when rebuilding heaps with arities greater than 13 in
+  `DaryHeap::append`.
+
 ## [0.2.3] &ndash; 2021-03-27
 ### Changed
 - Synchronize source code with standard library of Rust version 1.51.0.
