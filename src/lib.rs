@@ -1530,6 +1530,7 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 impl<T> FusedIterator for IntoIter<T> {}
 
 #[cfg(feature = "unstable_nightly")]
+#[doc(hidden)]
 unsafe impl<T> core::iter::SourceIter for IntoIter<T> {
     type Source = IntoIter<T>;
 
@@ -1540,6 +1541,7 @@ unsafe impl<T> core::iter::SourceIter for IntoIter<T> {
 }
 
 #[cfg(feature = "unstable_nightly")]
+#[doc(hidden)]
 unsafe impl<I> core::iter::InPlaceIterable for IntoIter<I> {}
 
 #[cfg(feature = "unstable")]
