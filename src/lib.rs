@@ -1199,7 +1199,6 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.len(), 2);
     /// ```
-    #[doc(alias = "length")]
     pub fn len(&self) -> usize {
         self.data.len()
     }

@@ -13,7 +13,7 @@ support.
 
 ## [Unreleased]
 ### Changed
-- Synchronize source code with standard library of Rust version 1.54.0.
+- Synchronize source code with standard library of Rust version 1.55.0.
 
 ## [0.3.1] &ndash; 2021-06-18
 ### Added
