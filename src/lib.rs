@@ -233,7 +233,6 @@
         exact_size_is_empty,
         extend_one,
         inplace_iteration,
-        shrink_to,
         trusted_len
     )
 )]
@@ -1250,7 +1249,6 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// # Examples
     ///
     /// ```
-    /// #![feature(shrink_to)]
     /// use dary_heap::TernaryHeap;
     /// let mut heap: TernaryHeap<i32> = TernaryHeap::with_capacity(100);
     ///
