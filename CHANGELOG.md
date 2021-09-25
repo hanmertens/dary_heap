@@ -10,7 +10,7 @@ branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
 ### Changed
-- Synchronize source code with standard library of Rust version 1.54.0.
+- Synchronize source code with standard library of Rust version 1.55.0.
 
 ## [0.2.4] &ndash; 2021-06-18
 ### Added

@@ -1319,7 +1319,6 @@ impl<T, D: Arity> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.len(), 2);
     /// ```
-    #[cfg_attr(rustc_1_48, doc(alias = "length"))]
     pub fn len(&self) -> usize {
         self.data.len()
     }
