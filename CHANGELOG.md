@@ -18,6 +18,10 @@ branch](https://github.com/hanmertens/dary_heap).
 - `DaryHeap::shrink_to` no longer needs the `unstable_nightly` flag. Instead,
   Rust 1.56.0+ is required.
 
+### Fixed
+- For `unstable_nightly`, fix necessary Rust feature flags since `SourceIter`
+  has been marked as `rustc_specialization_trait`.
+
 ## [0.2.4] &ndash; 2021-06-18
 ### Added
 - New function `DaryHeap::as_slice` when `unstable` feature is enabled.

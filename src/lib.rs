@@ -229,7 +229,13 @@
 #![cfg_attr(has_alloc, no_std)]
 #![cfg_attr(
     feature = "unstable_nightly",
-    feature(exact_size_is_empty, extend_one, inplace_iteration, trusted_len)
+    feature(
+        exact_size_is_empty,
+        extend_one,
+        inplace_iteration,
+        min_specialization,
+        trusted_len
+    )
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::needless_doctest_main)]
