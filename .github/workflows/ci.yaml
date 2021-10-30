@@ -63,10 +63,10 @@ jobs:
       run: cargo test
     - name: Build with stable features
       if: matrix.build != 'msrv'
-      run: cargo build --features serde
+      run: cargo build --features extra,serde
     - name: Test with stable features
       if: startsWith(matrix.build, 'msrv') == false
-      run: cargo test --features serde
+      run: cargo test --features extra,serde
     - name: Build with unstable features
       if: startsWith(matrix.build, 'msrv') == false
       run: cargo build --features unstable
