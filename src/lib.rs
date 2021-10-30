@@ -459,14 +459,6 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 /// assert!(heap.is_empty())
 /// ```
 ///
-/// A `DaryHeap` with a known list of items can be initialized from an array:
-///
-/// ```
-/// use dary_heap::QuaternaryHeap;
-///
-/// let heap = QuaternaryHeap::from([1, 5, 2]);
-/// ```
-///
 /// ## Min-heap
 ///
 /// Either `std::cmp::Reverse` or a custom `Ord` implementation can be used to
