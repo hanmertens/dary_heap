@@ -9,6 +9,8 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+
+## [0.2.5] &ndash; 2021-10-30
 ### Changed
 - Synchronize source code with standard library of Rust version 1.56.0.
 - `DaryHeap::shrink_to` no longer needs the `unstable_nightly` flag. Instead,
@@ -86,7 +88,8 @@ branch](https://github.com/hanmertens/dary_heap).
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.4...non-const-generics
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.5...non-const-generics
+[0.2.5]: https://github.com/hanmertens/dary_heap/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/hanmertens/dary_heap/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/hanmertens/dary_heap/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/hanmertens/dary_heap/compare/v0.2.1...v0.2.2
