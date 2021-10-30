@@ -12,8 +12,15 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Implement array conversion `From<[T; N]>` for `DaryHeap`.
+- The feature `extra` is added for non-essential functions that require a higher
+  MSRV than the crate otherwise would. This higher MSRV is currently 1.56.0.
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.55.0.
+- Synchronize source code with standard library of Rust version 1.56.0.
+- `DaryHeap::shrink_to` no longer needs the `unstable_nightly` flag. Because it
+  requires a higher MSRV it is now available under the `extra` feature flag.
 
 ## [0.3.1] &ndash; 2021-06-18
 ### Added

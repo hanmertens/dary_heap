@@ -132,7 +132,7 @@
 //!     }
 //! }
 //!
-//! // Each node is represented as an `usize`, for a shorter implementation.
+//! // Each node is represented as a `usize`, for a shorter implementation.
 //! struct Edge {
 //!     node: usize,
 //!     cost: usize,
@@ -337,6 +337,14 @@ pub type OctonaryHeap<T> = DaryHeap<T, 8>;
 ///
 /// // The heap should now be empty.
 /// assert!(heap.is_empty())
+/// ```
+///
+/// A `DaryHeap` with a known list of items can be initialized from an array:
+///
+/// ```
+/// use dary_heap::QuaternaryHeap;
+///
+/// let heap = QuaternaryHeap::from([1, 5, 2]);
 /// ```
 ///
 /// ## Min-heap
@@ -1132,8 +1140,8 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// assert!(heap.capacity() >= 10);
     /// ```
     #[inline]
-    #[cfg(feature = "unstable_nightly")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "unstable_nightly")))]
+    #[cfg(feature = "extra")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "extra")))]
     pub fn shrink_to(&mut self, min_capacity: usize) {
         self.data.shrink_to(min_capacity)
     }
@@ -1675,6 +1683,21 @@ impl<T: Ord, const D: usize> From<Vec<T>> for DaryHeap<T, D> {
         let mut heap = DaryHeap { data: vec };
         heap.rebuild();
         heap
+    }
+}
+
+impl<T: Ord, const D: usize, const N: usize> From<[T; N]> for DaryHeap<T, D> {
+    /// ```
+    /// use dary_heap::TernaryHeap;
+    ///
+    /// let mut h1 = TernaryHeap::from([1, 4, 2, 3]);
+    /// let mut h2: TernaryHeap<_> = [1, 4, 2, 3].into();
+    /// while let Some((a, b)) = h1.pop().zip(h2.pop()) {
+    ///     assert_eq!(a, b);
+    /// }
+    /// ```
+    fn from(arr: [T; N]) -> Self {
+        core::array::IntoIter::new(arr).collect()
     }
 }
 
