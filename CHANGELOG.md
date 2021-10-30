@@ -22,6 +22,10 @@ support.
 - `DaryHeap::shrink_to` no longer needs the `unstable_nightly` flag. Because it
   requires a higher MSRV it is now available under the `extra` feature flag.
 
+### Fixed
+- For `unstable_nightly`, fix necessary Rust feature flags since `SourceIter`
+  has been marked as `rustc_specialization_trait`.
+
 ## [0.3.1] &ndash; 2021-06-18
 ### Added
 - New function `DaryHeap::as_slice` when `unstable` feature is enabled.
