@@ -12,6 +12,8 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+
+## [0.3.2] &ndash; 2021-10-30
 ### Added
 - Implement array conversion `From<[T; N]>` for `DaryHeap`.
 - The feature `extra` is added for non-essential functions that require a higher
@@ -99,7 +101,8 @@ support.
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/hanmertens/dary_heap/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/hanmertens/dary_heap/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/hanmertens/dary_heap/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/hanmertens/dary_heap/compare/v0.2.2...v0.2.3
