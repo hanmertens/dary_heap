@@ -9,8 +9,14 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+### Added
+- Implement array conversion `From<[T; N]>` for `DaryHeap` (requires Rust
+  1.51.0+).
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.55.0.
+- Synchronize source code with standard library of Rust version 1.56.0.
+- `DaryHeap::shrink_to` no longer needs the `unstable_nightly` flag. Instead,
+  Rust 1.56.0+ is required.
 
 ## [0.2.4] &ndash; 2021-06-18
 ### Added

@@ -4,4 +4,8 @@ fn main() {
     ac.emit_sysroot_crate("alloc");
     // Version where rules for implementing traits on foreign types were relaxed
     ac.emit_rustc_version(1, 41);
+    // Version where const generics were stabilized
+    ac.emit_rustc_version(1, 51);
+    // Version where Vec::shrink_to was stabilized
+    ac.emit_rustc_version(1, 56);
 }

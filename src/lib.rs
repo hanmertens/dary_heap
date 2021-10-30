@@ -132,7 +132,7 @@
 //!     }
 //! }
 //!
-//! // Each node is represented as an `usize`, for a shorter implementation.
+//! // Each node is represented as a `usize`, for a shorter implementation.
 //! struct Edge {
 //!     node: usize,
 //!     cost: usize,
@@ -451,6 +451,14 @@ pub type OctonaryHeap<T> = DaryHeap<T, D8>;
 ///
 /// // The heap should now be empty.
 /// assert!(heap.is_empty())
+/// ```
+///
+/// A `DaryHeap` with a known list of items can be initialized from an array:
+///
+/// ```
+/// use dary_heap::QuaternaryHeap;
+///
+/// let heap = QuaternaryHeap::from([1, 5, 2]);
 /// ```
 ///
 /// ## Min-heap
@@ -1251,9 +1259,11 @@ impl<T, D: Arity> DaryHeap<T, D> {
     /// heap.shrink_to(10);
     /// assert!(heap.capacity() >= 10);
     /// ```
+    ///
+    /// # Compatibility
+    /// This function is only implemented on Rust version 1.56.0 or greater.
     #[inline]
-    #[cfg(feature = "unstable_nightly")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "unstable_nightly")))]
+    #[cfg(rustc_1_56)]
     pub fn shrink_to(&mut self, min_capacity: usize) {
         self.data.shrink_to(min_capacity)
     }
@@ -1801,10 +1811,28 @@ impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
     }
 }
 
-#[cfg(rustc_1_41)]
+/// # Compatibility
+/// This trait is only implemented on Rust version 1.51.0 or greater.
+#[cfg(rustc_1_51)]
+impl<T: Ord, D: Arity, const N: usize> From<[T; N]> for DaryHeap<T, D> {
+    /// ```
+    /// use dary_heap::TernaryHeap;
+    ///
+    /// let mut h1 = TernaryHeap::from([1, 4, 2, 3]);
+    /// let mut h2: TernaryHeap<_> = [1, 4, 2, 3].into();
+    /// while let Some((a, b)) = h1.pop().zip(h2.pop()) {
+    ///     assert_eq!(a, b);
+    /// }
+    /// ```
+    fn from(arr: [T; N]) -> Self {
+        core::array::IntoIter::new(arr).collect()
+    }
+}
+
 /// # Compatibility
 /// This trait is only implemented on Rust version 1.41.0 or greater. On earlier
 /// versions `Into<Vec<T>>` is implemented for `DaryHeap<T, D>` instead.
+#[cfg(rustc_1_41)]
 impl<T, D: Arity> From<DaryHeap<T, D>> for Vec<T> {
     /// Converts a `DaryHeap<T, D>` into a `Vec<T>`.
     ///
