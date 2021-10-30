@@ -1818,24 +1818,6 @@ impl<T: Ord, D: Arity> From<Vec<T>> for DaryHeap<T, D> {
 }
 
 /// # Compatibility
-/// This trait is only implemented on Rust version 1.51.0 or greater.
-#[cfg(rustc_1_51)]
-impl<T: Ord, D: Arity, const N: usize> From<[T; N]> for DaryHeap<T, D> {
-    /// ```
-    /// use dary_heap::TernaryHeap;
-    ///
-    /// let mut h1 = TernaryHeap::from([1, 4, 2, 3]);
-    /// let mut h2: TernaryHeap<_> = [1, 4, 2, 3].into();
-    /// while let Some((a, b)) = h1.pop().zip(h2.pop()) {
-    ///     assert_eq!(a, b);
-    /// }
-    /// ```
-    fn from(arr: [T; N]) -> Self {
-        core::array::IntoIter::new(arr).collect()
-    }
-}
-
-/// # Compatibility
 /// This trait is only implemented on Rust version 1.41.0 or greater. On earlier
 /// versions `Into<Vec<T>>` is implemented for `DaryHeap<T, D>` instead.
 #[cfg(rustc_1_41)]

@@ -35,7 +35,6 @@ The aim is to keep the crate in sync with the latest stable Rust release.
 The MSRV is currently 1.31.0. There are some minor features that depend on a
 higher minimum version of Rust and are automatically detected:
 
-- The `From<[T; N]>` trait implementation requires at least Rust version 1.56.0.
 - The `shrink_to` method requires at least Rust version 1.51.0.
 - Support for `From<DaryHeap<T, D>>` for `Vec<T>` requires at least Rust version
   1.41.0. `Into<Vec<T>>` for `DaryHeap<T, D>` can be used on older versions.
