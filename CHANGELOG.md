@@ -9,6 +9,10 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+### Changed
+- Synchronize source code with standard library of Rust version 1.57.0.
+- Several functions are now marked `must_use` (`new`, `with_capacity`,
+  `into_iter_sorted`, `as_slice`, `into_vec`).
 
 ## [0.2.5] &ndash; 2021-10-30
 ### Changed
