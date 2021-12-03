@@ -12,6 +12,10 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Changed
+- Synchronize source code with standard library of Rust version 1.57.0.
+- Several functions are now marked `must_use` (`new`, `with_capacity`,
+  `into_iter_sorted`, `as_slice`, `into_vec`).
 
 ## [0.3.2] &ndash; 2021-10-30
 ### Added
