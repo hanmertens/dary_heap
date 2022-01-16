@@ -280,9 +280,9 @@ pub type OctonaryHeap<T> = DaryHeap<T, 8>;
 /// item's ordering relative to any other item, as determined by the [`Ord`]
 /// trait, changes while it is in the heap. This is normally only possible
 /// through [`Cell`], [`RefCell`], global state, I/O, or unsafe code. The
-/// behavior resulting from such a logic error is not specified, but will
-/// not result in undefined behavior. This could include panics, incorrect
-/// results, aborts, memory leaks, and non-termination.
+/// behavior resulting from such a logic error is not specified (it
+/// could include panics, incorrect results, aborts, memory leaks, or
+/// non-termination) but will not be undefined behavior.
 ///
 /// # Usage
 ///
@@ -677,6 +677,7 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// let vec = heap.into_sorted_vec();
     /// assert_eq!(vec, [1, 2, 3, 4, 5, 6, 7]);
     /// ```
+    #[must_use = "`self` will be dropped if the result is not used"]
     pub fn into_sorted_vec(mut self) -> Vec<T> {
         let mut end = self.len();
         while end > 1 {
@@ -1021,7 +1022,6 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// ```
     #[cfg(feature = "unstable")]
     #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
-    #[must_use = "`self` will be dropped if the result is not used"]
     pub fn into_iter_sorted(self) -> IntoIterSorted<T, D> {
         IntoIterSorted { inner: self }
     }
@@ -1047,6 +1047,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// # Time complexity
     ///
     /// Cost is *O*(1) in the worst case.
+    #[must_use]
     pub fn peek(&self) -> Option<&T> {
         self.data.get(0)
     }
@@ -1063,6 +1064,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// assert!(heap.capacity() >= 100);
     /// heap.push(4);
     /// ```
+    #[must_use]
     pub fn capacity(&self) -> usize {
         self.data.capacity()
     }
@@ -1215,6 +1217,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.len(), 2);
     /// ```
+    #[must_use]
     pub fn len(&self) -> usize {
         self.data.len()
     }
@@ -1237,6 +1240,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// assert!(!heap.is_empty());
     /// ```
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -1441,6 +1445,7 @@ impl<T> Drop for Hole<'_, T> {
 /// documentation for more.
 ///
 /// [`iter`]: DaryHeap::iter
+#[must_use = "iterators are lazy and do nothing unless consumed"]
 pub struct Iter<'a, T: 'a> {
     iter: slice::Iter<'a, T>,
 }
@@ -1560,6 +1565,7 @@ unsafe impl<T> core::iter::SourceIter for IntoIter<T> {
 #[doc(hidden)]
 unsafe impl<I> core::iter::InPlaceIterable for IntoIter<I> {}
 
+#[must_use = "iterators are lazy and do nothing unless consumed"]
 #[cfg(feature = "unstable")]
 #[derive(Clone, Debug)]
 pub struct IntoIterSorted<T, const D: usize> {

@@ -13,9 +13,10 @@ support.
 
 ## [Unreleased]
 ### Changed
-- Synchronize source code with standard library of Rust version 1.57.0.
+- Synchronize source code with standard library of Rust version 1.58.0.
 - Several functions are now marked `must_use` (`new`, `with_capacity`,
-  `into_iter_sorted`, `as_slice`, `into_vec`).
+  `into_sorted_vec`, `as_slice`, `into_vec`, `peek`, `capacity`, `len`,
+  `is_empty`), as well as some iterators (`Iter` and `IntoIterSorted`).
 
 ## [0.3.2] &ndash; 2021-10-30
 ### Added
