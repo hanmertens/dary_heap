@@ -1719,6 +1719,10 @@ impl<T: Ord, const D: usize, const N: usize> From<[T; N]> for DaryHeap<T, D> {
     /// }
     /// ```
     fn from(arr: [T; N]) -> Self {
+        // With newer Rust versions `Self::from_iter(arr)` should be used, as
+        // using `IntoIter::new` is deprecated from 1.59.0. However, this would
+        // require a MSRV of 1.53.0, and both are equivalent behind the scenes.
+        #[allow(deprecated)]
         core::array::IntoIter::new(arr).collect()
     }
 }
