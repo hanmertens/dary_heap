@@ -249,6 +249,8 @@ use core::ops::{Deref, DerefMut};
 use core::ptr;
 use core::slice;
 
+#[cfg(feature = "unstable")]
+use alloc::collections::TryReserveError;
 use alloc::{vec, vec::Vec};
 
 /// A binary heap (*d* = 2).
@@ -1117,6 +1119,84 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// ```
     pub fn reserve(&mut self, additional: usize) {
         self.data.reserve(additional);
+    }
+
+    /// Tries to reserve the minimum capacity for exactly `additional`
+    /// elements to be inserted in the given `DaryHeap`. After calling
+    /// `try_reserve_exact`, capacity will be greater than or equal to
+    /// `self.len() + additional` if it returns `Ok(())`.
+    /// Does nothing if the capacity is already sufficient.
+    ///
+    /// Note that the allocator may give the collection more space than it
+    /// requests. Therefore, capacity can not be relied upon to be precisely
+    /// minimal. Prefer [`try_reserve`] if future insertions are expected.
+    ///
+    /// [`try_reserve`]: DaryHeap::try_reserve
+    ///
+    /// # Errors
+    ///
+    /// If the capacity overflows, or the allocator reports a failure, then an error
+    /// is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dary_heap::BinaryHeap;
+    /// use std::collections::TryReserveError;
+    ///
+    /// fn find_max_slow(data: &[u32]) -> Result<Option<u32>, TryReserveError> {
+    ///     let mut heap = BinaryHeap::new();
+    ///
+    ///     // Pre-reserve the memory, exiting if we can't
+    ///     heap.try_reserve_exact(data.len())?;
+    ///
+    ///     // Now we know this can't OOM in the middle of our complex work
+    ///     heap.extend(data.iter());
+    ///
+    ///     Ok(heap.pop())
+    /// }
+    /// # find_max_slow(&[1, 2, 3]).expect("why is the test harness OOMing on 12 bytes?");
+    /// ```
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.data.try_reserve_exact(additional)
+    }
+
+    /// Tries to reserve capacity for at least `additional` more elements to be inserted
+    /// in the given `DaryHeap`. The collection may reserve more space to avoid
+    /// frequent reallocations. After calling `try_reserve`, capacity will be
+    /// greater than or equal to `self.len() + additional`. Does nothing if
+    /// capacity is already sufficient.
+    ///
+    /// # Errors
+    ///
+    /// If the capacity overflows, or the allocator reports a failure, then an error
+    /// is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dary_heap::QuaternaryHeap;
+    /// use std::collections::TryReserveError;
+    ///
+    /// fn find_max_slow(data: &[u32]) -> Result<Option<u32>, TryReserveError> {
+    ///     let mut heap = QuaternaryHeap::new();
+    ///
+    ///     // Pre-reserve the memory, exiting if we can't
+    ///     heap.try_reserve(data.len())?;
+    ///
+    ///     // Now we know this can't OOM in the middle of our complex work
+    ///     heap.extend(data.iter());
+    ///
+    ///     Ok(heap.pop())
+    /// }
+    /// # find_max_slow(&[1, 2, 3]).expect("why is the test harness OOMing on 12 bytes?");
+    /// ```
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.data.try_reserve(additional)
     }
 
     /// Discards as much additional capacity as possible.

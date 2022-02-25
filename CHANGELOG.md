@@ -12,8 +12,12 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Add `try_reserve` and `try_reserve_exact` methods when `unstable` feature is
+  enabled.
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.58.0.
+- Synchronize source code with standard library of Rust version 1.59.0.
 - Several functions are now marked `must_use` (`new`, `with_capacity`,
   `into_sorted_vec`, `as_slice`, `into_vec`, `peek`, `capacity`, `len`,
   `is_empty`), as well as some iterators (`Iter` and `IntoIterSorted`).
