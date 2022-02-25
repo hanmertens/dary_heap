@@ -12,6 +12,8 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+
+## [0.3.3] &ndash; 2022-02-25
 ### Added
 - Add `try_reserve` and `try_reserve_exact` methods when `unstable` feature is
   enabled.
@@ -110,7 +112,8 @@ support.
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/hanmertens/dary_heap/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/hanmertens/dary_heap/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/hanmertens/dary_heap/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/hanmertens/dary_heap/compare/v0.2.3...v0.3.0
