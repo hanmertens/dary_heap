@@ -842,6 +842,9 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
 
         let tail_len = self.len() - start;
 
+        // The fix for this lint (usize::BITS) requires Rust 1.53.0, but the
+        // MSRV is currently 1.51.0.
+        #[allow(clippy::manual_bits)]
         #[inline(always)]
         fn log2_fast(x: usize) -> usize {
             8 * size_of::<usize>() - (x.leading_zeros() as usize) - 1
