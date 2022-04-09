@@ -25,7 +25,7 @@ the standard library. The `BinaryHeap` provided by this crate should therefore
 provide similar performance as that of the standard library, and the other heap
 types provided by this crate may provide performance improvements.
 
-The version of the standard library this crate is based on is currently 1.59.0.
+The version of the standard library this crate is based on is currently 1.60.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
 The minimum supported Rust version (MSRV) is currently 1.51.0. The last version
