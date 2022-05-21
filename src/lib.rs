@@ -331,7 +331,7 @@ pub type OctonaryHeap<T> = DaryHeap<T, 8>;
 /// // We can iterate over the items in the heap, although they are returned in
 /// // a random order.
 /// for x in &heap {
-///     println!("{}", x);
+///     println!("{x}");
 /// }
 ///
 /// // If we instead pop these scores, they should come back in order.
@@ -952,7 +952,7 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
 
     /// Retains only the elements specified by the predicate.
     ///
-    /// In other words, remove all elements `e` such that `f(&e)` returns
+    /// In other words, remove all elements `e` for which `f(&e)` returns
     /// `false`. The elements are visited in unsorted (and unspecified) order.
     ///
     /// # Examples
@@ -1003,7 +1003,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// // Print 1, 2, 3, 4 in arbitrary order
     /// for x in heap.iter() {
-    ///     println!("{}", x);
+    ///     println!("{x}");
     /// }
     /// ```
     pub fn iter(&self) -> Iter<'_, T> {
@@ -1280,7 +1280,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// // Will print in some order
     /// for x in vec {
-    ///     println!("{}", x);
+    ///     println!("{x}");
     /// }
     /// ```
     #[must_use = "`self` will be dropped if the result is not used"]
@@ -1346,7 +1346,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// assert!(!heap.is_empty());
     ///
     /// for x in heap.drain() {
-    ///     println!("{}", x);
+    ///     println!("{x}");
     /// }
     ///
     /// assert!(heap.is_empty());
@@ -1636,6 +1636,8 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 
 impl<T> FusedIterator for IntoIter<T> {}
 
+// In addition to the SAFETY invariants of the following two unsafe traits
+// also refer to the vec::in_place_collect module documentation to get an overview
 #[cfg(feature = "unstable_nightly")]
 #[doc(hidden)]
 unsafe impl<T> core::iter::SourceIter for IntoIter<T> {
@@ -1848,7 +1850,7 @@ impl<T, const D: usize> IntoIterator for DaryHeap<T, D> {
     /// // Print 1, 2, 3, 4 in arbitrary order
     /// for x in heap.into_iter() {
     ///     // x has type i32, not &i32
-    ///     println!("{}", x);
+    ///     println!("{x}");
     /// }
     /// ```
     fn into_iter(self) -> IntoIter<T> {
