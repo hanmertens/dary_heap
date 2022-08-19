@@ -29,7 +29,7 @@ the standard library. The `BinaryHeap` provided by this crate should therefore
 provide similar performance as that of the standard library, and the other heap
 types provided by this crate may provide performance improvements.
 
-The version of the standard library this crate is based on is currently 1.61.0.
+The version of the standard library this crate is based on is currently 1.63.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
 The MSRV is currently 1.31.0. There are some minor features that depend on a
@@ -63,8 +63,6 @@ release.
     in heap order.
   - add `retain` function that retains only those elements in the heap specified
     by the predicate.
-  - add `try_reserve` method to try to reserve additional capacity in the heap.
-  - add `try_reserve_exact` method to try to reserve minimal additonal capacity.
 - `unstable_nightly`: enable support for experimental (unstable) features that
   require a nightly Rust compiler:
   - implement methods defined by unstable feature `exact_size_is_empty` on

@@ -10,11 +10,11 @@ branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
 ### Added
-- Add `try_reserve` and `try_reserve_exact` methods when `unstable` feature is
-  enabled, and the Rust version is at least 1.57.0.
+- Add `try_reserve` and `try_reserve_exact` methods when the Rust version is at
+  least 1.57.0.
 
 ### Changed
-- Synchronize source code with standard library of Rust version 1.61.0.
+- Synchronize source code with standard library of Rust version 1.63.0.
 - Several functions are now marked `must_use` (`new`, `with_capacity`,
   `into_sorted_vec`, `as_slice`, `into_vec`, `peek`, `capacity`, `len`,
   `is_empty`), as well as some iterators (`Iter` and `IntoIterSorted`).
