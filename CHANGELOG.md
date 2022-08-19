@@ -12,6 +12,10 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Changed
+- Synchronize source code with standard library of Rust version 1.63.0.
+- Move `try_reserve` and `try_reserve_exact` methods from `unstable` to `extra`
+  feature. This raises the MSRV of the `extra` feature to 1.57.0.
 
 ## [0.3.3] &ndash; 2022-02-25
 ### Added
