@@ -14,7 +14,7 @@ branch](https://github.com/hanmertens/dary_heap).
   least 1.57.0.
 
 ### Changed
-- Synchronize source code with standard library of Rust version 1.63.0.
+- Synchronize source code with standard library of Rust version 1.65.0.
 - Several functions are now marked `must_use` (`new`, `with_capacity`,
   `into_sorted_vec`, `as_slice`, `into_vec`, `peek`, `capacity`, `len`,
   `is_empty`), as well as some iterators (`Iter` and `IntoIterSorted`).
