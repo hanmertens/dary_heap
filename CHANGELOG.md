@@ -12,6 +12,8 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Changed
+- Synchronize source code with standard library of Rust version 1.65.0.
 
 ## [0.3.4] &ndash; 2022-08-19
 ### Changed
