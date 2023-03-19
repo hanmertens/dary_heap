@@ -25,8 +25,10 @@ current="$(git rev-parse "${current_rev}")" \
 new="$(git rev-parse "${new_rev}")" \
     || { echo "New git revision (${new_rev}) not found"; exit 1; }
 
-git diff "${current}" "${new}" "${alloc}/src/collections/binary_heap.rs" \
+git diff "${current}" "${new}" "${alloc}/src/collections/binary_heap/mod.rs" \
     | patch --merge=diff3 "${base}/../src/lib.rs"
+git diff "${current}" "${new}" "${alloc}/src/testing/crash_test.rs" \
+    | patch --merge=diff3 "${base}/../tests/binary_heap/crash_test.rs"
 git diff "${current}" "${new}" "${alloc}/src/collections/binary_heap/tests.rs" \
     | patch --merge=diff3 "${base}/../tests/binary_heap.rs"
 git diff "${current}" "${new}" "${alloc}/benches/binary_heap.rs" \
