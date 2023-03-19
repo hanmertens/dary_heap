@@ -14,10 +14,14 @@ branch](https://github.com/hanmertens/dary_heap).
   least 1.57.0.
 
 ### Changed
-- Synchronize source code with standard library of Rust version 1.65.0.
+- Synchronize source code with standard library of Rust version 1.68.0.
 - Several functions are now marked `must_use` (`new`, `with_capacity`,
   `into_sorted_vec`, `as_slice`, `into_vec`, `peek`, `capacity`, `len`,
   `is_empty`), as well as some iterators (`Iter` and `IntoIterSorted`).
+
+### Fixed
+- Leaking a `PeekMut` value no longer leads to a potentially inconsistent state,
+  but instead potentially leaks other heap elements.
 
 ## [0.2.5] &ndash; 2021-10-30
 ### Changed
