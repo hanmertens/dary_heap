@@ -6,4 +6,6 @@ fn main() {
     ac.emit_rustc_version(1, 41);
     // Version where Vec::shrink_to was stabilized
     ac.emit_rustc_version(1, 56);
+    // Version where Vec::try_reserve and related methods/types were stabilized
+    ac.emit_rustc_version(1, 57);
 }
