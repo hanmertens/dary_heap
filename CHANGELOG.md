@@ -9,6 +9,8 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+
+## [0.2.6] &ndash; 2023-05-21
 ### Added
 - Add `try_reserve` and `try_reserve_exact` methods when the Rust version is at
   least 1.57.0.
@@ -103,7 +105,8 @@ branch](https://github.com/hanmertens/dary_heap).
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.5...non-const-generics
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.2.6...non-const-generics
+[0.2.6]: https://github.com/hanmertens/dary_heap/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/hanmertens/dary_heap/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/hanmertens/dary_heap/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/hanmertens/dary_heap/compare/v0.2.2...v0.2.3
