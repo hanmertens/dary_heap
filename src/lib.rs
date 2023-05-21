@@ -2221,14 +2221,18 @@ mod tests {
 
         let mut dary = BinaryHeap::<i32>::new();
         serde_test::assert_tokens(&dary, &empty);
-        dary.extend(&[1, 2, 3]);
+        for i in [1, 2, 3] {
+            dary.push(i);
+        }
         serde_test::assert_tokens(&dary, &part);
         dary.push(4);
         serde_test::assert_tokens(&dary, &full);
 
         let mut std = alloc::collections::BinaryHeap::<i32>::new();
         serde_test::assert_ser_tokens(&std, &empty);
-        std.extend(&[1, 2, 3]);
+        for i in [1, 2, 3] {
+            std.push(i);
+        }
         serde_test::assert_ser_tokens(&std, &part);
         std.push(4);
         serde_test::assert_ser_tokens(&std, &full);
