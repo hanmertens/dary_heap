@@ -1027,7 +1027,10 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
             first_removed: usize,
         }
 
-        let mut guard = RebuildOnDrop { first_removed: self.len(), heap: self };
+        let mut guard = RebuildOnDrop {
+            first_removed: self.len(),
+            heap: self,
+        };
         // Split the borrow outside of the closure to appease the borrow checker
         let first_removed = &mut guard.first_removed;
 
