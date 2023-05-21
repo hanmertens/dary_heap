@@ -47,15 +47,6 @@ jobs:
         profile: minimal
     - name: Update Cargo.lock
       run: cargo update
-    - name: Cache cargo directories
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-test-${{ hashFiles('Cargo.lock') }}
-        restore-keys: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-test-
     - name: Build
       run: cargo build
     - name: Test
@@ -94,15 +85,6 @@ jobs:
         override: true
     - name: Update Cargo.lock
       run: cargo update
-    - name: Cache cargo directories
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-lint-${{ hashFiles('Cargo.lock') }}
-        restore-keys: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-lint-
     - name: Check clippy
       run: cargo clippy --features serde,unstable
     - name: Check formatting
@@ -125,16 +107,6 @@ jobs:
         components: miri
     - name: Update Cargo.lock
       run: cargo update
-    - name: Cache cargo directories
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cache/miri
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-miri-${{ hashFiles('Cargo.lock') }}
-        restore-keys: ${{ runner.os }}-${{ steps.rust-toolchain.outputs.rustc_hash }}-miri-
     - name: Setup Miri
       run: cargo miri setup
     - name: Test with all features using Miri
