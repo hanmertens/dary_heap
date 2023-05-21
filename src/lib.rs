@@ -1022,18 +1022,32 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     where
         F: FnMut(&T) -> bool,
     {
-        let mut first_removed = self.len();
+        struct RebuildOnDrop<'a, T: Ord, const D: usize> {
+            heap: &'a mut DaryHeap<T, D>,
+            first_removed: usize,
+        }
+
+        let mut guard = RebuildOnDrop { first_removed: self.len(), heap: self };
+        // Split the borrow outside of the closure to appease the borrow checker
+        let first_removed = &mut guard.first_removed;
+
         let mut i = 0;
-        self.data.retain(|e| {
+        guard.heap.data.retain(|e| {
             let keep = f(e);
-            if !keep && i < first_removed {
-                first_removed = i;
+            if !keep && i < *first_removed {
+                *first_removed = i;
             }
             i += 1;
             keep
         });
-        // data[0..first_removed] is untouched, so we only need to rebuild the tail:
-        self.rebuild_tail(first_removed);
+
+        impl<'a, T: Ord, const D: usize> Drop for RebuildOnDrop<'a, T, D> {
+            fn drop(&mut self) {
+                // data[..first_removed] is untouched, so we only need to
+                // rebuild the tail:
+                self.heap.rebuild_tail(self.first_removed);
+            }
+        }
     }
 }
 

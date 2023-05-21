@@ -13,11 +13,13 @@ support.
 
 ## [Unreleased]
 ### Changed
-- Synchronize source code with standard library of Rust version 1.68.0.
+- Synchronize source code with standard library of Rust version 1.69.0.
 
 ### Fixed
-- Leaking a `PeekMut` value no longer leads to a potentially inconsistent state,
-  but instead potentially leaks other heap elements.
+- Leaking a `PeekMut` value can no longer lead to an inconsistent state, but it
+  can leak other heap elements instead.
+- A panic in the closure provided to `retain` can no longer lead to an
+  inconsistent state.
 
 ## [0.3.4] &ndash; 2022-08-19
 ### Changed
