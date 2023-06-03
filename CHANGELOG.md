@@ -9,6 +9,13 @@ The changelog of versions 0.3.0 and greater can be found [on the default
 branch](https://github.com/hanmertens/dary_heap).
 
 ## [Unreleased]
+### Added
+- Implement `Default` for `IntoIter`.
+
+### Changed
+- Synchronize source code with standard library of Rust version 1.70.0.
+- The `retain` method no longer requires the `unstable` feature.
+- Improve `extend` performance.
 
 ## [0.2.6] &ndash; 2023-05-21
 ### Added
