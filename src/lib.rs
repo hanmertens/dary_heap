@@ -400,7 +400,6 @@ pub type OctonaryHeap<T> = DaryHeap<T, 8>;
 /// more detailed analysis.
 ///
 /// [`core::cmp::Reverse`]: core::cmp::Reverse
-/// [`Ord`]: core::cmp::Ord
 /// [`Cell`]: core::cell::Cell
 /// [`RefCell`]: core::cell::RefCell
 /// [push]: DaryHeap::push
@@ -557,6 +556,17 @@ impl<T: Ord, const D: usize> Default for DaryHeap<T, D> {
 impl<T: fmt::Debug, const D: usize> fmt::Debug for DaryHeap<T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
+    }
+}
+
+struct RebuildOnDrop<'a, T: Ord, const D: usize> {
+    heap: &'a mut DaryHeap<T, D>,
+    rebuild_from: usize,
+}
+
+impl<'a, T: Ord, const D: usize> Drop for RebuildOnDrop<'a, T, D> {
+    fn drop(&mut self) {
+        self.heap.rebuild_tail(self.rebuild_from);
     }
 }
 
@@ -1016,41 +1026,28 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     ///
     /// assert_eq!(heap.into_sorted_vec(), [-10, 2, 4])
     /// ```
-    #[cfg(feature = "unstable")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&T) -> bool,
     {
-        struct RebuildOnDrop<'a, T: Ord, const D: usize> {
-            heap: &'a mut DaryHeap<T, D>,
-            first_removed: usize,
-        }
-
+        // rebuild_start will be updated to the first touched element below, and the rebuild will
+        // only be done for the tail.
         let mut guard = RebuildOnDrop {
-            first_removed: self.len(),
+            rebuild_from: self.len(),
             heap: self,
         };
         // Split the borrow outside of the closure to appease the borrow checker
-        let first_removed = &mut guard.first_removed;
-
+        let rebuild_from = &mut guard.rebuild_from;
         let mut i = 0;
+
         guard.heap.data.retain(|e| {
             let keep = f(e);
-            if !keep && i < *first_removed {
-                *first_removed = i;
+            if !keep && i < *rebuild_from {
+                *rebuild_from = i;
             }
             i += 1;
             keep
         });
-
-        impl<'a, T: Ord, const D: usize> Drop for RebuildOnDrop<'a, T, D> {
-            fn drop(&mut self) {
-                // data[..first_removed] is untouched, so we only need to
-                // rebuild the tail:
-                self.heap.rebuild_tail(self.first_removed);
-            }
-        }
     }
 }
 
@@ -1664,7 +1661,6 @@ impl<T> FusedIterator for Iter<'_, T> {}
 /// (provided by the [`IntoIterator`] trait). See its documentation for more.
 ///
 /// [`into_iter`]: DaryHeap::into_iter
-/// [`IntoIterator`]: core::iter::IntoIterator
 #[derive(Clone)]
 pub struct IntoIter<T> {
     iter: vec::IntoIter<T>,
@@ -1707,6 +1703,20 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 }
 
 impl<T> FusedIterator for IntoIter<T> {}
+
+impl<T> Default for IntoIter<T> {
+    /// Creates an empty `dary_heap::IntoIter`.
+    ///
+    /// ```
+    /// let iter: dary_heap::IntoIter<u8> = Default::default();
+    /// assert_eq!(iter.len(), 0);
+    /// ```
+    fn default() -> Self {
+        IntoIter {
+            iter: Vec::new().into_iter(),
+        }
+    }
+}
 
 // In addition to the SAFETY invariants of the following two unsafe traits
 // also refer to the vec::in_place_collect module documentation to get an overview
@@ -1944,7 +1954,11 @@ impl<'a, T, const D: usize> IntoIterator for &'a DaryHeap<T, D> {
 impl<T: Ord, const D: usize> Extend<T> for DaryHeap<T, D> {
     #[inline]
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
-        self.extend_desugared(iter.into_iter());
+        let guard = RebuildOnDrop {
+            rebuild_from: self.len(),
+            heap: self,
+        };
+        guard.heap.data.extend(iter);
     }
 
     #[inline]
@@ -1957,17 +1971,6 @@ impl<T: Ord, const D: usize> Extend<T> for DaryHeap<T, D> {
     #[cfg(feature = "unstable_nightly")]
     fn extend_reserve(&mut self, additional: usize) {
         self.reserve(additional);
-    }
-}
-
-impl<T: Ord, const D: usize> DaryHeap<T, D> {
-    fn extend_desugared<I: IntoIterator<Item = T>>(&mut self, iter: I) {
-        let iterator = iter.into_iter();
-        let (lower, _) = iterator.size_hint();
-
-        self.reserve(lower);
-
-        iterator.for_each(move |elem| self.push(elem));
     }
 }
 

@@ -12,6 +12,13 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Implement `Default` for `IntoIter`.
+
+### Changed
+- Synchronize source code with standard library of Rust version 1.70.0.
+- The `retain` method no longer requires the `unstable` feature.
+- Improve `extend` performance.
 
 ## [0.3.5] &ndash; 2023-05-21
 ### Changed
