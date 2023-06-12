@@ -39,12 +39,9 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
     - name: Install Rust toolchain
-      id: rust-toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
     - name: Update Cargo.lock
       run: cargo update
     - name: Build
@@ -78,11 +75,9 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
     - name: Install Rust toolchain
-      id: rust-toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
-        override: true
+        components: clippy, rustfmt
     - name: Update Cargo.lock
       run: cargo update
     - name: Check clippy
@@ -99,11 +94,8 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
     - name: Install Rust toolchain
-      id: rust-toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@nightly
       with:
-        toolchain: nightly
-        override: true
         components: miri
     - name: Update Cargo.lock
       run: cargo update
