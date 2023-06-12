@@ -12,6 +12,8 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+
+## [0.3.6] &ndash; 2023-06-12
 ### Added
 - Implement `Default` for `IntoIter`.
 
@@ -135,7 +137,8 @@ support.
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.5...HEAD
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.6...HEAD
+[0.3.6]: https://github.com/hanmertens/dary_heap/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/hanmertens/dary_heap/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/hanmertens/dary_heap/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/hanmertens/dary_heap/compare/v0.3.2...v0.3.3
