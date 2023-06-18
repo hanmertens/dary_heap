@@ -1,0 +1,22 @@
+[package]
+name = "dary_heap-criterion"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2018"
+
+[dependencies.dary_heap]
+path = ".."
+
+[dev-dependencies]
+criterion = "0.5"
+rand = "0.8"
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bench]]
+name = "dary_heap"
+path = "dary_heap.rs"
+harness = false
