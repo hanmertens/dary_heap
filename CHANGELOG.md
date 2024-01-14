@@ -15,6 +15,10 @@ support.
 ### Changed
 - Synchronize source code with standard library of Rust version 1.75.0.
 
+### Fixed
+- Compiles again with feature `unstable_nightly` enabled on recent nightly
+  after the unstable trait `InPlaceIterable` was changed upstream.
+
 ## [0.3.6] &ndash; 2023-06-12
 ### Added
 - Implement `Default` for `IntoIter`.

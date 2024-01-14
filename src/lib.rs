@@ -234,6 +234,7 @@
         extend_one,
         inplace_iteration,
         min_specialization,
+        trusted_fused,
         trusted_len
     )
 )]
@@ -1116,6 +1117,8 @@ impl<T, const D: usize> DaryHeap<T, D> {
     /// Cost is *O*(1) in the worst case.
     #[must_use]
     pub fn peek(&self) -> Option<&T> {
+        // Ignore this lint to keep it identical with upstream
+        #[allow(clippy::get_first)]
         self.data.get(0)
     }
 
@@ -1704,6 +1707,10 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 
 impl<T> FusedIterator for IntoIter<T> {}
 
+#[cfg(feature = "unstable_nightly")]
+#[doc(hidden)]
+unsafe impl<I> core::iter::TrustedFused for IntoIter<I> {}
+
 impl<T> Default for IntoIter<T> {
     /// Creates an empty `dary_heap::IntoIter`.
     ///
@@ -1733,7 +1740,10 @@ unsafe impl<T> core::iter::SourceIter for IntoIter<T> {
 
 #[cfg(feature = "unstable_nightly")]
 #[doc(hidden)]
-unsafe impl<I> core::iter::InPlaceIterable for IntoIter<I> {}
+unsafe impl<I> core::iter::InPlaceIterable for IntoIter<I> {
+    const EXPAND_BY: Option<NonZeroUsize> = NonZeroUsize::new(1);
+    const MERGE_BY: Option<NonZeroUsize> = NonZeroUsize::new(1);
+}
 
 #[must_use = "iterators are lazy and do nothing unless consumed"]
 #[cfg(feature = "unstable")]
