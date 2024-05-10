@@ -13,7 +13,7 @@ support.
 
 ## [Unreleased]
 ### Changed
-- Synchronize source code with standard library of Rust version 1.75.0.
+- Synchronize source code with standard library of Rust version 1.78.0.
 
 ### Fixed
 - Compiles again with feature `unstable_nightly` enabled on recent nightly

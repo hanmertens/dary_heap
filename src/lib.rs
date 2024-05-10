@@ -1709,7 +1709,7 @@ impl<T> FusedIterator for IntoIter<T> {}
 
 #[cfg(feature = "unstable_nightly")]
 #[doc(hidden)]
-unsafe impl<I> core::iter::TrustedFused for IntoIter<I> {}
+unsafe impl<T> core::iter::TrustedFused for IntoIter<T> {}
 
 impl<T> Default for IntoIter<T> {
     /// Creates an empty `dary_heap::IntoIter`.
