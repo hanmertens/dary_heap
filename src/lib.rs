@@ -239,7 +239,7 @@
     )
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![allow(clippy::needless_doctest_main)]
+#![allow(non_local_definitions, unexpected_cfgs, clippy::needless_doctest_main)]
 
 extern crate alloc;
 
