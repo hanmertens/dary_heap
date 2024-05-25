@@ -489,7 +489,6 @@ fn assert_covariance() {
 }
 
 #[test]
-#[cfg(feature = "unstable")]
 fn test_retain() {
     let mut a = BinaryHeap::from(vec![100, 10, 50, 1, 2, 20, 30]);
     a.retain(|&x| x != 2);
@@ -511,7 +510,6 @@ fn test_retain() {
 }
 
 #[test]
-#[cfg(feature = "unstable")]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn test_retain_catch_unwind() {
     let mut heap = BinaryHeap::from(vec![3, 1, 2]);
