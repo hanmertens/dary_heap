@@ -583,6 +583,10 @@ impl<'a, T: Ord, const D: usize> Drop for RebuildOnDrop<'a, T, D> {
 impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// Creates an empty `DaryHeap` as a max-heap.
     ///
+    /// # Notes
+    ///
+    /// This function is `const` on crate feature `extra` only.
+    ///
     /// # Examples
     ///
     /// Basic usage:
@@ -594,12 +598,15 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// ```
     #[must_use]
     #[cfg(not(feature = "extra"))]
-    #[cfg_attr(docsrs, doc(cfg(not(feature = "extra"))))]
     pub fn new() -> DaryHeap<T, D> {
         DaryHeap { data: vec![] }
     }
 
     /// Creates an empty `DaryHeap` as a max-heap.
+    ///
+    /// # Notes
+    ///
+    /// This function is `const` on crate feature `extra` only.
     ///
     /// # Examples
     ///
@@ -612,7 +619,6 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// ```
     #[must_use]
     #[cfg(feature = "extra")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "extra")))]
     pub const fn new() -> DaryHeap<T, D> {
         DaryHeap { data: vec![] }
     }
