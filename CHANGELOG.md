@@ -12,8 +12,14 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Implement `Default` for `Iter`.
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.78.0.
+- Synchronize source code with standard library of Rust version 1.82.0.
+- Make the `new` method `const` when the `extra` feature is enabled. This
+  raises the MSRV of the `extra` feature to 1.61.0.
+- No longer require the `unstable` feature for the `as_slice` method.
 
 ### Fixed
 - Compiles again with feature `unstable_nightly` enabled on recent nightly

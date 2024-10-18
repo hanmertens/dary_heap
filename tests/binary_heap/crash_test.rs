@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 use std::cmp::Ordering;
-use std::fmt::Debug;
-use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
+use std::fmt::Debug; // the `Debug` trait is the only thing we use from `std::fmt`
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::SeqCst;
 
 /// A blueprint for crash test dummy instances that monitor particular events.
 /// Some instances may be configured to panic at some point.

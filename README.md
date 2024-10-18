@@ -25,7 +25,7 @@ the standard library. The `BinaryHeap` provided by this crate should therefore
 provide similar performance as that of the standard library, and the other heap
 types provided by this crate may provide performance improvements.
 
-The version of the standard library this crate is based on is currently 1.78.0.
+The version of the standard library this crate is based on is currently 1.82.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
 The minimum supported Rust version (MSRV) is currently 1.51.0. The last version
@@ -42,14 +42,13 @@ release.
 
 ## Features
 
-- `extra`: add features that require a higher MSRV (currently 1.57.0).
+- `extra`: add features that require a higher MSRV (currently 1.61.0).
   - add `shrink_to` method to shrink heap capacity to a lower bound.
   - add `try_reserve` method to try to reserve additional capacity in the heap.
   - add `try_reserve_exact` method to try to reserve minimal additonal capacity.
+  - make `new` method `const`.
 - `serde`: add support for (de)serialization using [Serde][serde].
 - `unstable`: enable support for experimental (unstable) features:
-  - add `as_slice` function to obtain a slice with the underlying data in
-    arbitrary order.
   - add `drain_sorted` method which is like `drain` but yields elements in heap
     order.
   - add `into_iter_sorted` method which is like `into_iter` but yields elements

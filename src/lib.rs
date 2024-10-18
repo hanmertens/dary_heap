@@ -117,7 +117,7 @@
 //! // instead of a max-heap.
 //! impl Ord for State {
 //!     fn cmp(&self, other: &Self) -> Ordering {
-//!         // Notice that the we flip the ordering on costs.
+//!         // Notice that we flip the ordering on costs.
 //!         // In case of a tie we compare positions - this step is necessary
 //!         // to make implementations of `PartialEq` and `Ord` consistent.
 //!         other.cost.cmp(&self.cost)
@@ -248,13 +248,11 @@
 
 extern crate alloc;
 
-use core::fmt;
 use core::iter::{FromIterator, FusedIterator};
 use core::mem::{size_of, swap, ManuallyDrop};
 use core::num::NonZeroUsize;
 use core::ops::{Deref, DerefMut};
-use core::ptr;
-use core::slice;
+use core::{fmt, ptr, slice};
 
 #[cfg(feature = "extra")]
 use alloc::collections::TryReserveError;
@@ -546,6 +544,12 @@ impl<T: Clone, const D: usize> Clone for DaryHeap<T, D> {
         }
     }
 
+    /// Overwrites the contents of `self` with a clone of the contents of `source`.
+    ///
+    /// This method is preferred over simply assigning `source.clone()` to `self`,
+    /// as it avoids reallocation if possible.
+    ///
+    /// See [`Vec::clone_from()`] for more details.
     fn clone_from(&mut self, source: &Self) {
         self.data.clone_from(&source.data);
     }
@@ -589,7 +593,27 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// heap.push(4);
     /// ```
     #[must_use]
+    #[cfg(not(feature = "extra"))]
+    #[cfg_attr(docsrs, doc(cfg(not(feature = "extra"))))]
     pub fn new() -> DaryHeap<T, D> {
+        DaryHeap { data: vec![] }
+    }
+
+    /// Creates an empty `DaryHeap` as a max-heap.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use dary_heap::QuaternaryHeap;
+    /// let mut heap = QuaternaryHeap::new();
+    /// heap.push(4);
+    /// ```
+    #[must_use]
+    #[cfg(feature = "extra")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "extra")))]
+    pub const fn new() -> DaryHeap<T, D> {
         DaryHeap { data: vec![] }
     }
 
@@ -1081,6 +1105,7 @@ impl<T, const D: usize> DaryHeap<T, D> {
     }
 
     /// Returns an iterator which retrieves elements in heap order.
+    ///
     /// This method consumes the original heap.
     ///
     /// # Examples
@@ -1336,8 +1361,6 @@ impl<T, const D: usize> DaryHeap<T, D> {
     ///
     /// io::sink().write(heap.as_slice()).unwrap();
     /// ```
-    #[cfg(feature = "unstable")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
     #[must_use]
     pub fn as_slice(&self) -> &[T] {
         self.data.as_slice()
@@ -1467,7 +1490,7 @@ struct Hole<'a, T: 'a> {
 }
 
 impl<'a, T> Hole<'a, T> {
-    /// Create a new `Hole` at index `pos`.
+    /// Creates a new `Hole` at index `pos`.
     ///
     /// Unsafe because pos must be within the data slice.
     #[inline]
@@ -1611,6 +1634,19 @@ impl<T> Drop for Hole<'_, T> {
 #[must_use = "iterators are lazy and do nothing unless consumed"]
 pub struct Iter<'a, T: 'a> {
     iter: slice::Iter<'a, T>,
+}
+
+impl<T> Default for Iter<'_, T> {
+    /// Creates an empty `dary_heap::Iter`.
+    ///
+    /// ```
+    /// let iter: dary_heap::Iter<'_, u8> = Default::default();
+    /// assert_eq!(iter.len(), 0);
+    /// ```
+    fn default() -> Self {
+        // `Default::default()` requires Rust 1.70.0 or later
+        Iter { iter: [].iter() }
+    }
 }
 
 impl<T: fmt::Debug> fmt::Debug for Iter<'_, T> {

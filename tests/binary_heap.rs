@@ -1,16 +1,17 @@
 #![cfg_attr(
     feature = "unstable_nightly",
-    feature(exact_size_is_empty, is_sorted, trusted_len)
+    feature(exact_size_is_empty, trusted_len)
 )]
 
 mod binary_heap {
     pub mod crash_test;
 }
 
-use binary_heap::crash_test::{CrashTestDummy, Panic};
-use dary_heap::{BinaryHeap, Drain, PeekMut};
 use std::mem;
 use std::panic::{catch_unwind, AssertUnwindSafe};
+
+use binary_heap::crash_test::{CrashTestDummy, Panic};
+use dary_heap::{BinaryHeap, Drain, PeekMut};
 
 #[test]
 fn test_iterator() {
@@ -540,10 +541,11 @@ fn test_retain_catch_unwind() {
 #[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn panic_safe() {
-    use rand::{seq::SliceRandom, thread_rng};
     use std::cmp;
     use std::panic::{self, AssertUnwindSafe};
     use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use rand::{seq::SliceRandom, thread_rng};
 
     static DROP_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
