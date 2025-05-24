@@ -47,6 +47,7 @@ release.
   - add `try_reserve` method to try to reserve additional capacity in the heap.
   - add `try_reserve_exact` method to try to reserve minimal additonal capacity.
   - make `new` method `const`.
+  - make `PeekMut::pop` potentially faster.
 - `serde`: add support for (de)serialization using [Serde][serde].
 - `unstable`: enable support for experimental (unstable) features:
   - add `drain_sorted` method which is like `drain` but yields elements in heap

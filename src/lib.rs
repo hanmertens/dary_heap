@@ -603,7 +603,14 @@ impl<'a, T: Ord, const D: usize> PeekMut<'a, T, D> {
 
         // SAFETY: Have a `PeekMut` element proves that the associated binary heap being non-empty,
         // so the `pop` operation will not fail.
-        unsafe { this.heap.pop().unwrap_unchecked() }
+        #[cfg(feature = "extra")]
+        unsafe {
+            this.heap.pop().unwrap_unchecked()
+        }
+        // Option::unwrap_unchecked() requires Rust 1.58.0, but the MSRV is
+        // currently 1.51.0.
+        #[cfg(not(feature = "extra"))]
+        this.heap.pop().unwrap()
     }
 }
 
