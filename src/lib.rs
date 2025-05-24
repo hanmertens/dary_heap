@@ -522,6 +522,73 @@ impl<T: Ord, const D: usize> DerefMut for PeekMut<'_, T, D> {
 }
 
 impl<'a, T: Ord, const D: usize> PeekMut<'a, T, D> {
+    /// Sifts the current element to its new position.
+    ///
+    /// Afterwards refers to the new element. Returns if the element changed.
+    ///
+    /// ## Examples
+    ///
+    /// The condition can be used to upper bound all elements in the heap. When only few elements
+    /// are affected, the heap's sort ensures this is faster than a reconstruction from the raw
+    /// element list and requires no additional allocation.
+    ///
+    /// ```
+    /// use dary_heap::BinaryHeap;
+    ///
+    /// let mut heap: BinaryHeap<u32> = (0..128).collect();
+    /// let mut peek = heap.peek_mut().unwrap();
+    ///
+    /// loop {
+    ///     *peek = 99;
+    ///
+    ///     if !peek.refresh() {
+    ///         break;
+    ///     }
+    /// }
+    ///
+    /// // Post condition, this is now an upper bound.
+    /// assert!(*peek < 100);
+    /// ```
+    ///
+    /// When the element remains the maximum after modification, the peek remains unchanged:
+    ///
+    /// ```
+    /// use dary_heap::BinaryHeap;
+    ///
+    /// let mut heap: BinaryHeap<u32> = [1, 2, 3].into();
+    /// let mut peek = heap.peek_mut().unwrap();
+    ///
+    /// assert_eq!(*peek, 3);
+    /// *peek = 42;
+    ///
+    /// // When we refresh, the peek is updated to the new maximum.
+    /// assert!(!peek.refresh(), "42 is even larger than 3");
+    /// assert_eq!(*peek, 42);
+    /// ```
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    #[must_use = "is equivalent to dropping and getting a new PeekMut except for return information"]
+    pub fn refresh(&mut self) -> bool {
+        // The length of the underlying heap is unchanged by sifting down. The value stored for leak
+        // amplification thus remains accurate. We erase the leak amplification firstly because the
+        // operation is then equivalent to constructing a new PeekMut and secondly this avoids any
+        // future complication where original_len being non-empty would be interpreted as the heap
+        // having been leak amplified instead of checking the heap itself.
+        if let Some(original_len) = self.original_len.take() {
+            // SAFETY: This is how many elements were in the Vec at the time of
+            // the DaryHeap::peek_mut call.
+            unsafe { self.heap.data.set_len(original_len.get()) };
+
+            // The length of the heap did not change by sifting, upholding our own invariants.
+
+            // SAFETY: PeekMut is only instantiated for non-empty heaps.
+            (unsafe { self.heap.sift_down(0) }) != 0
+        } else {
+            // The element was not modified.
+            false
+        }
+    }
+
     /// Removes the peeked value from the heap and returns it.
     pub fn pop(mut this: PeekMut<'a, T, D>) -> T {
         if let Some(original_len) = this.original_len.take() {
@@ -533,7 +600,10 @@ impl<'a, T: Ord, const D: usize> PeekMut<'a, T, D> {
             // the caller could've mutated the element. It is removed from the
             // heap on the next line and pop() is not sensitive to its value.
         }
-        this.heap.pop().unwrap()
+
+        // SAFETY: Have a `PeekMut` element proves that the associated binary heap being non-empty,
+        // so the `pop` operation will not fail.
+        unsafe { this.heap.pop().unwrap_unchecked() }
     }
 }
 
@@ -627,7 +697,7 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     ///
     /// The *d*-ary heap will be able to hold at least `capacity` elements without
     /// reallocating. This method is allowed to allocate for more elements than
-    /// `capacity`. If `capacity` is 0, the *d*-ary heap will not allocate.
+    /// `capacity`. If `capacity` is zero, the *d*-ary heap will not allocate.
     ///
     /// # Examples
     ///
@@ -806,6 +876,8 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// # Safety
     ///
     /// The caller must guarantee that `pos < self.len()`.
+    ///
+    /// Returns the new position of the element.
     unsafe fn sift_up(&mut self, start: usize, pos: usize) -> usize {
         assert_ne!(D, 0, "Arity should be greater than zero");
         // Take out the value at `pos` and create a hole.
@@ -833,10 +905,12 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// Take an element at `pos` and move it down the heap,
     /// while its children are larger.
     ///
+    /// Returns the new position of the element.
+    ///
     /// # Safety
     ///
     /// The caller must guarantee that `pos < end <= self.len()`.
-    unsafe fn sift_down_range(&mut self, pos: usize, end: usize) {
+    unsafe fn sift_down_range(&mut self, pos: usize, end: usize) -> usize {
         assert_ne!(D, 0, "Arity should be greater than zero");
         // SAFETY: The caller guarantees that pos < end <= self.len().
         let mut hole = Hole::new(&mut self.data, pos);
@@ -854,7 +928,7 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
             // SAFETY: child is now either the old child or valid sibling
             //  We already proven that all are < self.len() and != hole.pos()
             if hole.element() >= hole.get(child) {
-                return;
+                return hole.pos();
             }
 
             // SAFETY: same as above.
@@ -870,16 +944,18 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
             //  child == d * hole.pos() + 1 != hole.pos().
             hole.move_to(child);
         }
+
+        hole.pos()
     }
 
     /// # Safety
     ///
     /// The caller must guarantee that `pos < self.len()`.
-    unsafe fn sift_down(&mut self, pos: usize) {
+    unsafe fn sift_down(&mut self, pos: usize) -> usize {
         let len = self.len();
         // SAFETY: pos < len is guaranteed by the caller and
         //  obviously len = self.len() <= self.len().
-        self.sift_down_range(pos, len);
+        self.sift_down_range(pos, len)
     }
 
     /// Take an element at `pos` and move it all the way down the heap,

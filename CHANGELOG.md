@@ -12,6 +12,11 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Add `PeekMut::refresh` when the `unstable` feature is enabled.
+
+### Changed
+- Synchronize source code with standard library of Rust version 1.87.0.
 
 ## [0.3.7] &ndash; 2024-10-18
 ### Added

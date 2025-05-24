@@ -382,7 +382,7 @@ fn test_drain_forget() {
         mem::forget(it);
     }))
     .unwrap();
-    // Behaviour after leaking is explicitly unspecified and order is arbitrary,
+    // Behavior after leaking is explicitly unspecified and order is arbitrary,
     // so it's fine if these start failing, but probably worth knowing.
     assert!(q.is_empty());
     assert_eq!(a.dropped() + b.dropped() + c.dropped(), 1);
@@ -413,7 +413,7 @@ fn test_drain_sorted_forget() {
         mem::forget(it);
     }))
     .unwrap();
-    // Behaviour after leaking is explicitly unspecified,
+    // Behavior after leaking is explicitly unspecified,
     // so it's fine if these start failing, but probably worth knowing.
     assert_eq!(q.len(), 2);
     assert_eq!(a.dropped(), 0);
@@ -536,9 +536,7 @@ fn test_retain_catch_unwind() {
 // even if the order might not be correct.
 //
 // Destructors must be called exactly once per element.
-// FIXME: re-enable emscripten once it can unwind again
 #[test]
-#[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn panic_safe() {
     use std::cmp;

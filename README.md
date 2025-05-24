@@ -25,7 +25,7 @@ the standard library. The `BinaryHeap` provided by this crate should therefore
 provide similar performance as that of the standard library, and the other heap
 types provided by this crate may provide performance improvements.
 
-The version of the standard library this crate is based on is currently 1.82.0.
+The version of the standard library this crate is based on is currently 1.87.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
 The minimum supported Rust version (MSRV) is currently 1.51.0. The last version
@@ -53,6 +53,8 @@ release.
     order.
   - add `into_iter_sorted` method which is like `into_iter` but yields elements
     in heap order.
+  - add `PeekMut::refresh` method to obtain the current greatest element of the
+    heap after modification of the previously greatest element.
 - `unstable_nightly`: enable support for experimental (unstable) features that
   require a nightly Rust compiler:
   - implement methods defined by unstable feature `exact_size_is_empty` on
