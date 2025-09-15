@@ -16,7 +16,7 @@ support.
 - Add `PeekMut::refresh` when the `unstable` feature is enabled.
 
 ### Changed
-- Synchronize source code with standard library of Rust version 1.87.0.
+- Synchronize source code with standard library of Rust version 1.89.0.
 - When `extra` is enabled, `PeekMut::refresh` is potentially faster.
 
 ## [0.3.7] &ndash; 2024-10-18
