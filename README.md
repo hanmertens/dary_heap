@@ -28,12 +28,11 @@ types provided by this crate may provide performance improvements.
 The version of the standard library this crate is based on is currently 1.89.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
-The minimum supported Rust version (MSRV) is currently 1.51.0. The last version
-without const generics has a MSRV of 1.31.0 and is being maintained on [the
-non-const-generics branch][non-const-generics] of this repository.
-
-The MSRV can be increased in a minor level release, but not in a patch level
-release.
+The minimum supported Rust version (MSRV) is currently 1.51.0. The MSRV can be
+increased in a minor level release, but not in a patch level release. If a low
+MSRV is not required, the `extra` feature can be enabled to add features and
+performance enhancements which require a newer version of Rust (currently
+1.61.0), which can change in a patch level release.
 
 There are no stability guarantees for the `unstable` and `unstable_nightly`
 features. Changes to the behavior of nullary heaps (that should not be used
@@ -78,5 +77,4 @@ at your option.
 
 [wiki]: https://en.wikipedia.org/wiki/D-ary_heap
 [std-binaryheap]: https://doc.rust-lang.org/std/collections/struct.BinaryHeap.html
-[non-const-generics]: https://github.com/hanmertens/dary_heap/tree/non-const-generics
 [serde]: https://serde.rs
