@@ -12,6 +12,8 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+
+## [0.3.9] &ndash; 2026-04-16
 ### Added
 - Add `from_raw_vec` and `pop_if` methods when the `unstable` feature is
   enabled.
@@ -166,7 +168,8 @@ support.
   on stable compilers, and the features `exact_size_is_empty`, `extend_one`,
   `shrink_to`, and `trusted_len` that are only available on nightly compilers.
 
-[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.8...HEAD
+[Unreleased]: https://github.com/hanmertens/dary_heap/compare/v0.3.9...HEAD
+[0.3.9]: https://github.com/hanmertens/dary_heap/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/hanmertens/dary_heap/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/hanmertens/dary_heap/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/hanmertens/dary_heap/compare/v0.3.5...v0.3.6
