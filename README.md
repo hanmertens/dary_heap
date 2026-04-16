@@ -51,8 +51,11 @@ release.
 - `unstable`: enable support for experimental (unstable) features:
   - add `drain_sorted` method which is like `drain` but yields elements in heap
     order.
+  - add `from_raw_vec` method to create a heap from a `Vec` without rebuilding.
   - add `into_iter_sorted` method which is like `into_iter` but yields elements
     in heap order.
+  - add `pop_if` method to remove and return the greatest item from the heap if
+    the predicate returns `true`.
   - add `PeekMut::refresh` method to obtain the current greatest element of the
     heap after modification of the previously greatest element.
 - `unstable_nightly`: enable support for experimental (unstable) features that
