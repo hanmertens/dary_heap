@@ -12,8 +12,12 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Add `from_raw_vec` and `pop_if` methods when the `unstable` feature is
+  enabled.
+
 ### Changed
-- Synchronize source code with standard library of Rust version 1.94.0.
+- Synchronize source code with standard library of Rust version 1.95.0.
 - Remove `T: Ord` bound for `DaryHeap` instantiation.
 
 ## [0.3.8] &ndash; 2025-09-16

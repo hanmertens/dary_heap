@@ -721,6 +721,39 @@ impl<T, const D: usize> DaryHeap<T, D> {
             data: Vec::with_capacity(capacity),
         }
     }
+
+    /// Creates a `DaryHeap` using the supplied `vec`. This does not rebuild the heap,
+    /// so `vec` must already be a max-heap with the correct arity.
+    ///
+    /// # Safety
+    ///
+    /// The supplied `vec` must be a max-heap, i.e. for all indices `0 < i < vec.len()`,
+    /// `vec[(i - 1) / 2] >= vec[i]`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use dary_heap::BinaryHeap;
+    /// let heap = BinaryHeap::from([1, 2, 3]);
+    /// let vec = heap.into_vec();
+    ///
+    /// // Safety: vec is the output of heap.from_vec(), so is a max-heap.
+    /// let mut new_heap = unsafe {
+    ///     BinaryHeap::from_raw_vec(vec)
+    /// };
+    /// assert_eq!(new_heap.pop(), Some(3));
+    /// assert_eq!(new_heap.pop(), Some(2));
+    /// assert_eq!(new_heap.pop(), Some(1));
+    /// assert_eq!(new_heap.pop(), None);
+    /// ```
+    #[must_use]
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    pub unsafe fn from_raw_vec(vec: Vec<T>) -> DaryHeap<T, D> {
+        DaryHeap { data: vec }
+    }
 }
 
 impl<T: Ord, const D: usize> DaryHeap<T, D> {
@@ -793,6 +826,37 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
             }
             item
         })
+    }
+
+    /// Removes and returns the greatest item from the *d*-ary heap if the predicate
+    /// returns `true`, or [`None`] if the predicate returns false or the heap
+    /// is empty (the predicate will not be called in that case).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dary_heap::BinaryHeap;
+    /// let mut heap = BinaryHeap::from([1, 2]);
+    /// let pred = |x: &i32| *x % 2 == 0;
+    ///
+    /// assert_eq!(heap.pop_if(pred), Some(2));
+    /// assert_eq!(heap.as_slice(), [1]);
+    /// assert_eq!(heap.pop_if(pred), None);
+    /// assert_eq!(heap.as_slice(), [1]);
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// The worst case cost of `pop_if` on a heap containing *n* elements is *O*(log(*n*)).
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    pub fn pop_if(&mut self, predicate: impl FnOnce(&T) -> bool) -> Option<T> {
+        let first = self.peek()?;
+        if predicate(first) {
+            self.pop()
+        } else {
+            None
+        }
     }
 
     /// Pushes an item onto the *d*-ary heap.
