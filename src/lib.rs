@@ -632,7 +632,7 @@ impl<T: Clone, const D: usize> Clone for DaryHeap<T, D> {
     }
 }
 
-impl<T: Ord, const D: usize> Default for DaryHeap<T, D> {
+impl<T, const D: usize> Default for DaryHeap<T, D> {
     /// Creates an empty `DaryHeap<T, D>`.
     #[inline]
     fn default() -> DaryHeap<T, D> {
@@ -657,7 +657,7 @@ impl<'a, T: Ord, const D: usize> Drop for RebuildOnDrop<'a, T, D> {
     }
 }
 
-impl<T: Ord, const D: usize> DaryHeap<T, D> {
+impl<T, const D: usize> DaryHeap<T, D> {
     /// Creates an empty `DaryHeap` as a max-heap.
     ///
     /// # Notes
@@ -721,7 +721,9 @@ impl<T: Ord, const D: usize> DaryHeap<T, D> {
             data: Vec::with_capacity(capacity),
         }
     }
+}
 
+impl<T: Ord, const D: usize> DaryHeap<T, D> {
     /// Returns a mutable reference to the greatest item in the *d*-ary heap, or
     /// `None` if it is empty.
     ///

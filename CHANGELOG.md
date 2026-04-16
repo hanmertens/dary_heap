@@ -12,6 +12,9 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Changed
+- Synchronize source code with standard library of Rust version 1.94.0.
+- Remove `T: Ord` bound for `DaryHeap` instantiation.
 
 ## [0.3.8] &ndash; 2025-09-16
 ### Added
