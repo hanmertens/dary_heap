@@ -25,7 +25,7 @@ the standard library. The `BinaryHeap` provided by this crate should therefore
 provide similar performance as that of the standard library, and the other heap
 types provided by this crate may provide performance improvements.
 
-The version of the standard library this crate is based on is currently 1.95.0.
+The version of the standard library this crate is based on is currently 1.98.0.
 The aim is to keep the crate in sync with the latest stable Rust release.
 
 The minimum supported Rust version (MSRV) is currently 1.51.0. The MSRV can be
@@ -49,6 +49,7 @@ release.
   - make `PeekMut::pop` potentially faster.
 - `serde`: add support for (de)serialization using [Serde][serde].
 - `unstable`: enable support for experimental (unstable) features:
+  - add `as_mut_slice` method to mutably access arbitrary heap elements.
   - add `drain_sorted` method which is like `drain` but yields elements in heap
     order.
   - add `from_raw_vec` method to create a heap from a `Vec` without rebuilding.

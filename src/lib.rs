@@ -1521,6 +1521,36 @@ impl<T, const D: usize> DaryHeap<T, D> {
         self.data.as_slice()
     }
 
+    /// Returns a mutable slice of all values in the underlying vector.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the slice remains a max-heap of the same arity,
+    /// i.e. for all indices `0 < i < slice.len()`, `slice[(i - 1) / D] >= slice[i]`,
+    /// before the borrow ends and the *d*-ary heap is used.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use dary_heap::TernaryHeap;
+    ///
+    /// let mut heap = TernaryHeap::<u32>::from([1, 2, 3, 4, 5, 6, 7]);
+    ///
+    /// unsafe {
+    ///     for value in heap.as_mut_slice() {
+    ///         *value = (*value).saturating_mul(2);
+    ///     }
+    /// }
+    /// ```
+    #[must_use]
+    #[cfg(feature = "unstable")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "unstable")))]
+    pub unsafe fn as_mut_slice(&mut self) -> &mut [T] {
+        self.data.as_mut_slice()
+    }
+
     /// Consumes the `DaryHeap` and returns the underlying vector
     /// in arbitrary order.
     ///

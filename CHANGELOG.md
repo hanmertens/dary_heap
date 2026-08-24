@@ -12,6 +12,11 @@ The 0.3.0 release was based on 0.2.3, later 0.2.x releases are backports of
 support.
 
 ## [Unreleased]
+### Added
+- Add `as_mut_slice` method when the `unstable` feature is enabled.
+
+### Changed
+- Synchronize source code with standard library of Rust version 1.98.0.
 
 ## [0.3.9] &ndash; 2026-04-16
 ### Added
